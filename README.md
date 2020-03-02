@@ -1,4 +1,4 @@
 # cfw.Conflagrate 
 
-## Node traversal and such tools.
+## Tree traversal and such tools.
 
