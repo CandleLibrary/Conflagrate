@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "AST Traversal Library",
   "main": "/build/library/conflagrate.js",
-  "types": "./build/types/wick.node.d.ts",
+  "types": "./build/types/conflagrate.d.ts",
   "type": "module",
   "repository": "https://github.com/candlefw/conflagrate",
   "author": "Anthony C Weathersby",
