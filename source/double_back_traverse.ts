@@ -13,10 +13,10 @@ type ASTIterator<T, K extends keyof T> = Iterable<T> & {
 };
 
 /**
- * This traverses a tree and yields node descending and ascending depth first. Non-leaf nodes will be yielded 
+ * This traverses a tree and yields node descending and ascending, depth first. Non-leaf nodes will be yielded 
  * twice. Yielders can be used to perform non-destructive edits on the AST.
  * @param node - The root node of the AST tree.
- * @param children_key - The property of the node that contains its immediate descendants
+ * @param children_key - The property of a node that contains its immediate descendants
  * @param max_depth - The maximum level of the tree to return nodes from, starting level at 1 for the root node. 
  */
 export function double_back_traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
