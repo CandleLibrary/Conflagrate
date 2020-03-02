@@ -6,7 +6,7 @@ export class filterYielder<T, K extends keyof T> extends Yielder<T, K> {
 
 }
 /**
- * Filters nodes and yields only this whose property {key} matches one of the values {types}
+ * Filters nodes and yields only those whose property {key} matches one of the values {types}
  * 
  * @param key - A property name on the node that should be tested for a match.
  * @param types  - A list of possible values that we want property {key} to be.
