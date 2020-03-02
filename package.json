@@ -1,0 +1,9 @@
+{
+  "name": "@candlefw/conflagrate",
+  "version": "0.0.1",
+  "description": "AST Traversal Library",
+  "main": "/build/library/conflagrate.js",
+  "repository": "ssh://git@github.com/candlefw/conflagrate",
+  "author": "Anthony C Weathersby",
+  "license": "MIT"
+}
