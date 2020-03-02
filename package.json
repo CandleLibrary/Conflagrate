@@ -2,7 +2,7 @@
   "name": "@candlefw/conflagrate",
   "version": "0.0.1",
   "description": "AST Traversal Library",
-  "main": "/build/library/conflagrate.js",
+  "main": "./build/library/conflagrate.js",
   "types": "./build/types/conflagrate.d.ts",
   "type": "module",
   "repository": "https://github.com/candlefw/conflagrate",
