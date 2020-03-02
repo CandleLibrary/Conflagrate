@@ -17,7 +17,7 @@ export interface replaceYielder<T, K extends keyof T> extends Yielder<T, K> {
  * Adds a replace method to the node, allowing the node to be replaced with another node.
  * 
  * @param {replaceFunctionType} replace_function - A function used to handle the replacement
- * of ancestor nodes when a child node is replaced. Defaults to shallow copy assignments for 
+ * of ancestor nodes when a child node is replaced. Defaults to performing a shallow copy for 
  * each ancestor of the replaced node.
  */
 export function make_replaceable<T, K extends keyof T>(replace_function?: replaceFunctionType<T>) {
