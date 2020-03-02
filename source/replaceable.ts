@@ -2,9 +2,17 @@ import { Yielder } from "./yielder.js";
 import { getChildContainer, getChildContainerLength } from "./child_container_functions.js";
 
 /**
- * Called when a child node of a node is replaced. Allows
- * the node to be duplicated and transformed to keep the 
+ * Called when a child of a node is replaced. Allows the 
+ * the node to be duplicated / transformed to keep the 
  * AST unique. 
+ * 
+ * #### Example:
+ * 
+ * ```javascript
+ *  (node: T, child: T, child_index: number, children: T[]) => Object.assign({}, node);
+ * ```
+ * 
+ * 
  */
 type replaceFunctionType<T> = (node: T, child: T, child_index: number, children: T[]) => T;
 
