@@ -5,7 +5,7 @@ import { getChildContainerLength, getChildContainer } from "./child_container_fu
 type ASTIterator<T, K extends keyof T> = Iterable<T> & {
 
     /**
-     * Adds a node Yielder to the end of the yield chain.
+     * Adds a Yielder to the end of the yield chain.
      *
      * @param next_yielder A Node Yielder
      */
