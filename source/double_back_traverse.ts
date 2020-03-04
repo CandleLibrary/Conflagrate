@@ -123,6 +123,8 @@ export function double_back_traverse<T, K extends keyof T>(node: T, children_key
             else
                 yielder.then(next_yielder, children_key);
 
+            next_yielder.key = children_key;
+
             return AstTraverser;
         },
     };

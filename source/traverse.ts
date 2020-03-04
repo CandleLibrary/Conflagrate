@@ -56,7 +56,7 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                             if (y) return { value: y, done: false };
                         } else {
-                            return { done: true };
+                            return { value: null, done: true };
                         }
                     }
 
@@ -111,6 +111,8 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
                 yielder = next_yielder;
             else
                 yielder.then(next_yielder, children_key);
+
+            next_yielder.key = children_key;
 
             return AstTraverser;
         },
