@@ -5,12 +5,12 @@ export interface extractorYielder<T, K extends keyof T> extends Yielder<T, K> {
 
 }
 /**
- * Extracts root node from a traversed AST. If the node has been replaced, then it's replacement is
+ * Extracts root node from a traversed AST. If the node has been replaced, then its replacement is
  * extracted.
  *  
  * @param receiver - An object with a property [ast] that will be assigned to the root node.
  */
-export function extract<T, K extends keyof T>(receiver: { ast?: T | null; }): extractorYielder<T, K> {
+export function extract<T, K extends keyof T>(receiver: { ast?: T | null; }): Yielder<T, K> {
 
     if (!receiver || typeof receiver !== "object")
         throw new TypeError("Expected argument receiver to be of type [Object] when calling function extract.");
