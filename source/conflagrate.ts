@@ -4,6 +4,7 @@ import { traverse } from "./traverse.js";
 import { make_skippable } from "./skippable.js";
 import { double_back_traverse } from "./double_back_traverse.js";
 import { extract } from "./extract_root_node.js";
+import { replace, ReplaceFunction } from "./replace.js";
 
 export {
     extract,
@@ -12,4 +13,6 @@ export {
     make_skippable,
     double_back_traverse,
     traverse,
+    replace,
+    ReplaceFunction
 };
