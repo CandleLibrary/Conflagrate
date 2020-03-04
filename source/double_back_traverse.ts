@@ -72,7 +72,8 @@ export function double_back_traverse<T, K extends keyof T>(node: T, children_key
                             val_length_stack[stack_pointer + 1] = (child_limit << 16);
                         }
 
-                        y = yielder.yield(node, stack_pointer, node_stack, val_length_stack);
+                        if (node)
+                            y = yielder.yield(node, stack_pointer, node_stack, val_length_stack);
 
                         //if node has children yield the first child
                         if (child_limit > 0 && child_index < child_limit) {

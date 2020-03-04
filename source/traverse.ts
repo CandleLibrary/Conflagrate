@@ -50,9 +50,14 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                         if (!yielder) yielder = new Yielder<T, K>();
 
-                        const y = yielder.yield(node, stack_pointer, node_stack, val_length_stack);
+                        if (node) {
 
-                        if (y) return { value: y, done: false };
+                            const y = yielder.yield(node, stack_pointer, node_stack, val_length_stack);
+
+                            if (y) return { value: y, done: false };
+                        } else {
+                            return { done: true };
+                        }
                     }
 
                     while (stack_pointer >= 0) {
@@ -78,9 +83,11 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                             val_length_stack[stack_pointer] = getChildContainerLength(child, children_key) << 16;
 
-                            const y = yielder.yield(child, stack_pointer, node_stack, val_length_stack);
+                            if (child) {
+                                const y = yielder.yield(child, stack_pointer, node_stack, val_length_stack);
 
-                            if (y) return { value: y, done: false };
+                                if (y) return { value: y, done: false };
+                            }
 
                         } else
                             stack_pointer--;
