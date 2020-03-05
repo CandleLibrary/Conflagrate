@@ -1,7 +1,7 @@
 import { Yielder } from "./yielder.js";
 
 /**
- * Adds a skip method to the node, allowing traversal of the node's children to be skipped.
+ * Adds a skip method to the node, which, when called, causes the traverser to skip the node's children
  */
 export function make_skippable<T, K extends keyof T>() {
 
