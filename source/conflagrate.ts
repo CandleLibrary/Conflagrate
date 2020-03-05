@@ -5,6 +5,7 @@ import { make_skippable } from "./skippable.js";
 import { double_back_traverse } from "./double_back_traverse.js";
 import { extract } from "./extract_root_node.js";
 import { replace, ReplaceFunction } from "./replace.js";
+import { add_parent } from "./add_parent.js";
 
 export {
     extract,
@@ -14,5 +15,6 @@ export {
     double_back_traverse,
     traverse,
     replace,
+    add_parent,
     ReplaceFunction
 };
