@@ -1,16 +1,7 @@
 import { Yielder } from "./yielder.js";
-
 import { getChildContainerLength, getChildContainer } from "./child_container_functions.js";
-
-type ASTIterator<T, K extends keyof T> = Iterable<T> & {
-
-    /**
-     * Adds a Yielder to the end of the yield chain.
-     *
-     * @param next_yielder A Node Yielder
-     */
-    then: (arg0: Yielder<T, K>) => ASTIterator<T, K>;
-};
+import { TraversedNode } from "./types/traversed_node.js";
+import { ASTIterator } from "./types/node_iterator.js";
 
 /**
  * This traverses a tree and returns nodes depth first. Uses Yielders 
@@ -21,12 +12,11 @@ type ASTIterator<T, K extends keyof T> = Iterable<T> & {
  */
 export function traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
 
-    let yielder: Yielder<T, K> = null;
-
+    let yielder: Yielder<TraversedNode<T>, K> = null;
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    const AstTraverser: ASTIterator<T, K> = {
+    const AstTraverser: ASTIterator<TraversedNode<T>, K> = {
         [Symbol.iterator]: () => {
             let
                 stack_pointer = 0,
@@ -48,7 +38,7 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                         BEGINNING = false;
 
-                        if (!yielder) yielder = new Yielder<T, K>();
+                        if (!yielder) yielder = new Yielder<TraversedNode<T>, K>();
 
                         if (node) {
 
@@ -101,7 +91,7 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
             };
         },
 
-        then: function (next_yielder: Yielder<T, K>) {
+        then: function (next_yielder: Yielder<TraversedNode<T>, K>) {
 
             if (typeof next_yielder == "function")
                 //@ts-ignore
