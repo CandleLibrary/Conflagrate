@@ -8,7 +8,7 @@ export type TraversedNode<T> = T & {
      * Call this method to force the traverser to skip
      * the traversal of the node's descendents.
      *
-     * This method will be present on the node if the node
+     * This method will be present if the node
      * is yielded from a traverser that has a `make_skippable`
      * Yielder attached to it.
      */
@@ -18,7 +18,7 @@ export type TraversedNode<T> = T & {
      * Call this to replace the node with another node or to 
      * completely remove it from the tree.
      * 
-     * This method will be present on the node if the node
+     * This method will be present if the node
      * is yielded from a traverser that has a `make_replaceable`
      * Yielder attached to it.
      * 
@@ -32,8 +32,8 @@ export type TraversedNode<T> = T & {
      * Call this to replace the node with another node or to 
      * completely remove it from the tree.
      * 
-     * This property will be present on the node if the node
-     * is yielded from a traverser that has a `add_parent`
+     * This property will be present if the node 
+     * is yielded from a traverser that has an `add_parent`
      * Yielder attached to it.
      */
     parent? : T;
