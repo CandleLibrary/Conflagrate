@@ -118,6 +118,10 @@ export function double_back_traverse<T, K extends keyof T>(node: T, children_key
 
             return AstTraverser;
         },
+
+        run() {
+            for (const node of this);
+        }
     };
 
     return AstTraverser;

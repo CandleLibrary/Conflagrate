@@ -106,6 +106,10 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
             return AstTraverser;
         },
+
+        run() {
+            for (const node of this);
+        }
     };
 
     return AstTraverser;

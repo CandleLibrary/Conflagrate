@@ -7,4 +7,8 @@ export type ASTIterator<T, K extends keyof T> = Iterable<T> & {
      * @param next_yielder A Node Yielder
      */
     then: (arg0: Yielder<T, K>) => ASTIterator<T, K>;
+    /**
+     * Iterate through the Iterator
+     */
+    run: () => void;
 };
