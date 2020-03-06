@@ -3,7 +3,7 @@ import { Yielder } from "./yielder.js";
 /**
  * Adds a skip method to the node, which, when called, causes the traverser to skip the node's children
  */
-export function make_skippable<T, K extends keyof T>() {
+export function make_skippable<T, K extends keyof T>(): Yielder<T, K> {
 
     const obj: Yielder<T, K> = Object.assign(new Yielder<T, K>(), {});
 
@@ -12,7 +12,7 @@ export function make_skippable<T, K extends keyof T>() {
     return obj;
 }
 
-function skipYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T | null {
+function skipYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T & {skip:()=>void} | null {
 
     const skippable = Object.assign({
         skip: () => skip<T>(stack_pointer, val_length_stack)
