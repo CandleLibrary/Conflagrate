@@ -11,8 +11,11 @@ export type TraversedNode<T> = T & {
      * This method will be present if the node
      * is yielded from a traverser that has a `make_skippable`
      * Yielder attached to it.
+     * 
+     * @param {number} - If n is a number, skip to the nth descendent
+     * instead of skipping all descendents.
      */
-    skip?: () => void;
+    skip?: (n?: number) => void;
 
     /**
      * Call this to replace the node with another node or to 
@@ -36,6 +39,6 @@ export type TraversedNode<T> = T & {
      * is yielded from a traverser that has an `add_parent`
      * Yielder attached to it.
      */
-    parent? : T;
+    parent?: T;
 
 };

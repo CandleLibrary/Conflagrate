@@ -12,10 +12,10 @@ export function make_skippable<T, K extends keyof T>(): Yielder<T, K> {
     return obj;
 }
 
-function skipYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T & {skip:()=>void} | null {
+function skipYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T & { skip: () => void; } | null {
 
     const skippable = Object.assign({
-        skip: () => skip<T>(stack_pointer, val_length_stack)
+        skip: (n: number = 0xFFFF) => skip<T>(stack_pointer, val_length_stack, n)
     }, node);
 
     return this.yieldNext(skippable, stack_pointer, node_stack, val_length_stack);
@@ -23,9 +23,11 @@ function skipYield<T>(node: T, stack_pointer: number, node_stack: T[], val_lengt
 
 function skip<T>(
     stack_pointer: number,
-    val_length_stack: number[]
+    val_length_stack: number[],
+    n: number
 ) {
-    val_length_stack[stack_pointer] = 0;
+    val_length_stack[stack_pointer] =
+        (val_length_stack[stack_pointer] & 0xFFFF0000) | n;
 }
 
 
