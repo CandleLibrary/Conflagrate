@@ -7,14 +7,21 @@ import { extract } from "./extract_root_node.js";
 import { replace, ReplaceFunction } from "./replace.js";
 import { add_parent } from "./add_parent.js";
 import { bit_filter } from "./bit_filter.js";
-
+import { createSourceMapEntry, SourceMap, createSourceMap, createSourceMapJSON, getPositionLexerFromJsonSourceMap } from "./source_map.js";
 export {
+
+    createSourceMapJSON,
+    createSourceMap,
+    SourceMap,
+    createSourceMapEntry,
+    getPositionLexerFromJsonSourceMap,
+
+    traverse,
+    double_back_traverse,
     extract,
     filter,
     make_replaceable,
     make_skippable,
-    double_back_traverse,
-    traverse,
     replace,
     add_parent,
     ReplaceFunction,
