@@ -25,7 +25,7 @@ export function bit_filter<T, K extends keyof T, D extends keyof T>(key: D, ...b
 
 function bitFilterYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T | null {
 
-    const node_bitfield = parseInt(node[this.filter_key];
+    const node_bitfield = parseInt(node[this.filter_key]);
 
     if ((this.bit_mask & node_bitfield) !== 0)
         return this.yieldNext(node, stack_pointer, node_stack, val_length_stack);
