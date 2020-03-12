@@ -4,7 +4,7 @@ import { Yielder } from "./yielder.js";
  * A function that is used in the replace yielder. Receives
  * the node to be replaced, a reference to the parent node, and
  * the index of the nodes location within the parent node's 
- * descendents container.
+ * descendent container.
  */
 export type ReplaceFunction<T, K extends keyof T> = (node: T, parent: T, index: number) => any;
 
@@ -24,19 +24,20 @@ function replacerYield<T>(node: T, stack_pointer: number, node_stack: T[], val_l
 
     const
         parent = node_stack[stack_pointer - 1] || null,
-        index = val_length_stack[stack_pointer - 1] & 0xFFFF,
+        index = (val_length_stack[stack_pointer - 1] & 0xFFFF) - 1,
         new_node = this.replace_function(node, parent, index);
 
     if (new_node) {
 
         node_stack[stack_pointer] = new_node;
 
-        if (!node[this.key])
+        if (!new_node[this.key]) {
             val_length_stack[stack_pointer] = 0;
+        }
 
     } else {
 
-        val_length_stack[stack_pointer] = 0;
+        val_length_stack[stack_pointer]--;
 
         return null;
     }
