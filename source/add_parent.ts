@@ -15,6 +15,7 @@ export function add_parent<T, K extends keyof T>(): Yielder<T, K> {
 function addParentYield<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T & { skip: () => void; } | null {
 
     const parented = Object.assign({
+        index: stack_pointer > 0 ? (val_length_stack[stack_pointer - 1] & 0xFFFF) - 1 : -1,
         parent: stack_pointer > 0 ? node_stack[stack_pointer - 1] : null
     }, node);
 
