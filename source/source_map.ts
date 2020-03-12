@@ -188,7 +188,7 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
 
     let
         source = 0,
-        line = 0,
+        original_line = 0,
         original_column = 0,
         original_name = 0;
 
@@ -217,8 +217,8 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
                     source = seg.source;
                     segment_string_array.push(encodeVLQBase64(source_diff));
 
-                    const line_diff = seg.original_line - line;
-                    line = seg.original_line;
+                    const line_diff = seg.original_line - original_line;
+                    original_line = seg.original_line;
                     segment_string_array.push(encodeVLQBase64(line_diff));
 
                     const original_column_diff = seg.original_column - original_column;
@@ -226,7 +226,8 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
                     segment_string_array.push(encodeVLQBase64(original_column_diff));
 
                     if (seg.original_name) {
-                        original_name_diff = seg.original_name - original_name_diff;
+                        const original_name_diff = seg.original_column - original_name;
+                        original_name = seg.original_column;
                         segment_string_array.push(encodeVLQBase64(original_name_diff));
                     }
                 }
