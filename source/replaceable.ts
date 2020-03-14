@@ -1,5 +1,5 @@
 import { Yielder } from "./yielder.js";
-import { getChildContainer, getChildContainerLength } from "./child_container_functions.js";
+import { getChildContainerLength } from "./child_container_functions.js";
 
 /**
  * Called when a child of a node is replaced. Allows the 
@@ -32,7 +32,7 @@ export function make_replaceable<T, K extends keyof T>(replace_function?: replac
 
     const obj: replaceYielder<T, K> = Object.assign(new Yielder<T, K>(), {});
 
-    obj.replace_function = replace_function ? replace_function : (node: T, child: T, child_index: number, children: T[]) => Object.assign({}, node);
+    obj.replace_function = replace_function ? replace_function : (node: T, child: T, child_index: number, children: T[]) => node ? Object.assign({}, node) : null;
 
     obj.yield = replaceYield;
 
@@ -64,34 +64,37 @@ function replace<T, K extends keyof T>(
     //need to trace up the current stack and replace each node with a duplicate
     let node = replacement_node;
 
-    while (sp >= 0) {
+    if (sp > 0) {
+        let
+            parent = node_stack[sp - 1];
 
         const
-            len = val_length_stack[sp],
+            len = val_length_stack[sp - 1],
             limit = len & 0xFFFF0000 >>> 16,
-            index = len & 0xFFFF,
-            new_child_children_length = getChildContainerLength(node, key);
+            index = (len & 0xFFFF) - 1,
+            new_child_children_length = getChildContainerLength(node, key),
+            children: T[] = (<T[]><unknown>parent[replaceYielder.key]).slice();
+
+        parent = replaceYielder.replace_function(parent, node, index, children);
 
         if (new_child_children_length < limit)
             val_length_stack[sp] |= (new_child_children_length << 16);
 
-        if (node == null)
-            val_length_stack[sp]--;
-
-        node_stack[sp] = node;
-
-        if (--sp > -1) {
-
-            const
-                parent = node_stack[sp],
-                children: T[] = (<T[]><unknown>parent[replaceYielder.key]).slice();
-
-            children[(val_length_stack[sp] & 0xFFFF) - 1] = node;
-
-            node = replaceYielder.replace_function(parent, node, (val_length_stack[sp] & 0xFFFF) - 1, children);
-
-            (<T[]><unknown>node[replaceYielder.key]) = children;
+        if (node == null) {
+            val_length_stack[sp - 1] -= ((1 << 16) + 1);
+            children.splice(index, 1);
+            node_stack[sp] = children[index - 1];
+        } else {
+            children[index] = node;
+            node_stack[sp] = node;
         }
+
+        (<T[]><unknown>parent[replaceYielder.key]) = children;
+
+        replace(replaceYielder, parent, sp - 1, node_stack, val_length_stack);
+
+    } else {
+        node_stack[0] = node;
     }
 }
 
