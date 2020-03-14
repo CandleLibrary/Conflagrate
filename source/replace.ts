@@ -3,7 +3,7 @@ import { Yielder } from "./yielder.js";
 /**
  * A function that is used in the replace yielder. Receives
  * the node to be replaced, a reference to the parent node, and
- * the index of the nodes location within the parent node's 
+ * the index of the node's location within the parent node's 
  * descendent container.
  */
 export type ReplaceFunction<T, K extends keyof T> = (node: T, parent: T, index: number) => any;

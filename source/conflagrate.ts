@@ -8,6 +8,8 @@ import { replace, ReplaceFunction } from "./replace.js";
 import { add_parent } from "./add_parent.js";
 import { bit_filter } from "./bit_filter.js";
 import { createSourceMapEntry, SourceMap, createSourceMap, createSourceMapJSON, getPositionLexerFromJsonSourceMap } from "./source_map.js";
+import { skip_root } from "./skip_root.js";
+
 export {
 
     createSourceMapJSON,
@@ -16,6 +18,7 @@ export {
     createSourceMapEntry,
     getPositionLexerFromJsonSourceMap,
 
+    skip_root,
     traverse,
     double_back_traverse,
     extract,

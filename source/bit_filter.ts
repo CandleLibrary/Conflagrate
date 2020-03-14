@@ -6,7 +6,8 @@ export class filterYielder<T, K extends keyof T> extends Yielder<T, K> {
 
 }
 /**
- * Yields nodes whose property `K` returns a non-zero value when bitwise & with the list of arguments reduced to a bitwise mask.
+ * Yields nodes whose property indexed by `key` returns a non-zero value when 
+ * bitwise AND [&] with the list of arguments reduced to a bitwise mask.
  * 
  * @param key - A property name on the node that should be tested for a match.
  * @param {number} bit_mask  - A number

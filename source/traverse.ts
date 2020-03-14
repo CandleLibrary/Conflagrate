@@ -4,7 +4,7 @@ import { TraversedNode } from "./types/traversed_node.js";
 import { ASTIterator } from "./types/node_iterator.js";
 
 /**
- * This traverses a tree and returns nodes depth first. Uses Yielders 
+ * This traverses a tree and yields nodes depth first. Uses Yielders 
  * to perform non-destructive transforms on the AST.
  * @param node - The root node of the AST tree.
  * @param children_key - The property of a node that contains its immediate descendants.
