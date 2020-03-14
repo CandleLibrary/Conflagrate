@@ -9,5 +9,6 @@ export function skip_root<T, K extends keyof T, D extends keyof T>(): Yielder<T,
 function skipRootYielder<T>(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[]): T | null {
     if (stack_pointer == 0)
         return null;
-    return node;
+
+    return this.yieldNext(node, stack_pointer, node_stack, val_length_stack);
 }
