@@ -1,3 +1,5 @@
+//@ts-nocheck for now
+
 import { Lexer } from "@candlefw/whind";
 import URL from "@candlefw/url";
 
@@ -260,7 +262,7 @@ export function decodeVLQBase64(string: string) {
 
 function decodeVLQBase64Array(string): any {
     const
-        array = Array.from(string).map(e => base64LU.get(e)),
+        array = Array.from(string).map(e => base64LU.get(<string>e)),
         out_array = [];
 
     let start = 0;
