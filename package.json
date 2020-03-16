@@ -12,6 +12,7 @@
     "prepublish": "tsc -p ./tsconfig.json"
   },
   "dependencies": {
-    "@candlefw/url": "^0.1.0"
+    "@candlefw/url": "^0.1.0",
+    "@candlefw/wind": "latest"
   }
 }
