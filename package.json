@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/conflagrate",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Node Tree Traversal Library",
   "main": "./build/library/conflagrate.js",
   "types": "./build/types/conflagrate.d.ts",

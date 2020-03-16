@@ -9,7 +9,7 @@
   dependencies:
     "@candlefw/whind" latest
 
-"@candlefw/whind@latest":
+"@candlefw/wind@latest":
   version "0.4.0"
-  resolved "https://registry.npmjs.org/@candlefw/whind/-/whind-0.4.0.tgz#5a0de6edfbe2c1d3f0776bd7694acc150cb9bf6b"
-  integrity sha512-IhK2lIHWK037E6P6StRVK0po9YacIKAZ8mGCHZACslFi0Svi3PIMDlGCRA3gQyJFy7ihOy3AaBCcmw1SCgP3Kg==
+  resolved "https://registry.yarnpkg.com/@candlefw/wind/-/wind-0.4.0.tgz#a46c07bdfd0d9d1180b061447473ea8cfaf21209"
+  integrity sha512-G5fHDMnDmLBDR3IWZUnAfGD3n9N5CQFvnr4U2p3NW7ZR5uTs9K4EZ+3Vm0NBs/DaLLgHQbCF1Mc5KLBi4GKbqA==
