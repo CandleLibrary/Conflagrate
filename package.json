@@ -10,5 +10,8 @@
   "license": "MIT",
   "scripts": {
     "prepublish": "tsc -p ./tsconfig.json"
+  },
+  "dependencies": {
+    "@candlefw/url": "^0.1.0"
   }
 }
