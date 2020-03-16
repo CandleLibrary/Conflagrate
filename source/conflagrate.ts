@@ -7,16 +7,27 @@ import { extract } from "./extract_root_node.js";
 import { replace, ReplaceFunction } from "./replace.js";
 import { add_parent } from "./add_parent.js";
 import { bit_filter } from "./bit_filter.js";
-import { createSourceMapEntry, SourceMap, createSourceMap, createSourceMapJSON, getPositionLexerFromJsonSourceMap } from "./source_map.js";
+import {
+    createSourceMapEntry,
+    createSourceMap,
+    createSourceMapJSON,
+    decodeJSONSourceMap,
+    getSourceLineColumn,
+    getPositionLexerFromJSONSourceMap
+} from "./source_map.js";
+import { SourceMap } from "./types/source_map.js";
 import { skip_root } from "./skip_root.js";
 
 export {
 
-    createSourceMapJSON,
-    createSourceMap,
     SourceMap,
+
+    createSourceMapJSON,
+    decodeJSONSourceMap,
+    getSourceLineColumn,
+    createSourceMap,
     createSourceMapEntry,
-    getPositionLexerFromJsonSourceMap,
+    getPositionLexerFromJSONSourceMap,
 
     skip_root,
     traverse,

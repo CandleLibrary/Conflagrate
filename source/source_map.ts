@@ -1,112 +1,7 @@
-//@ts-nocheck for now
-
-import { Lexer } from "@candlefw/whind";
 import URL from "@candlefw/url";
-
-export type SourceMap = {
-    /**
-     * Version of the SourceMap format. This mapping system implements
-     * version 3
-     * 
-     * https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit#
-     */
-    version: number;
-    /**
-     * Name of the generated file. 
-     */
-    file?: string;
-    /**
-     * Source root.
-     */
-    sourceRoot?: string;
-    /**
-     * An array of original source file names / URIs. 
-     */
-    sources: Map<string, number>;
-    /**
-     * An array of the original source file contents. 
-     */
-    sourceContent?: Array<null | string>;
-    /**
-     * 
-     */
-    names?: Array<string>;
-    /**
-     * The source to generated mappings. 
-     * 
-     * Each line of the generated content mapped to a semicolon [ ; ], except for the first line.
-     * 
-     * Each segment is divided by a comma [ , ], where each segment is a type Segment converted to a Base64 VLQ field.
-     */
-    mappings: Array<Line>;
-
-    meta: any;
-};
-
-type Line = {
-    /**
-     * The line number, 0 index based. 
-     */
-    index: number;
-    /**
-     * List of source mapping segments.
-     */
-    segments: Array<Segment>;
-};
-
-
-type Segment = {
-    column: number,
-    /**
-     * Index number to entry SourceMap.sources, relative to previous source index. 
-     */
-    source?: number,
-    /**
-     * Original Line, relative to previous original line. Present if Segment.source is present.
-     */
-    original_line?: number,
-    /**
-     * Original column, relative to previous original column. Present if Segment.source is present.
-     */
-    original_column?: number,
-    /**
-     * Index number into SourceMap.names, relative to previous original name.
-     */
-    original_name?: number,
-};
-
-const
-    base64Map = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
-    base64LU = new Map(base64Map.map((v, i) => [v, i]));
-
-export function encodeVLQBase64(number) {
-    //divide into 5 bit segments
-    let sign = 0;
-
-    if (number < 0) {
-        number = -number;
-        sign = 1;
-    }
-
-    const segments = Array(6)
-        .fill(0, 0, 6)
-        .map((r, i) => (number >> (i * 5 - 1)) & 0x1F);
-    segments[0] = ((number & 0xF) << 1) | sign;
-
-    const
-        m_s = segments
-            .reduce((r, s, i) => (s & 0x3F) ? i : r, 0),
-
-        base64 = segments
-            .map((s, i) => i < m_s ? 0x20 | s : s)
-            .slice(0, m_s + 1)
-            .map(e => base64Map[e])
-            .join("");
-
-    return base64;
-};
-
-
+import { Lexer } from "@candlefw/whind";
+import { encodeVLQBase64, decodeVLQBase64Array } from "./vlq_base64.js";
+import { SourceMap, Segment, Line } from "./types/source_map.js";
 
 export function createSourceMap(): SourceMap {
     return {
@@ -242,52 +137,7 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
     return JSON.stringify(output);
 }
 
-export function readSourceMapJSON(string: string) {
-
-}
-
-
-export function decodeVLQBase64(string: string) {
-
-    const
-        $ = base64LU,
-        segments = Array.from(string),
-        ls = segments[0],
-        sign = 1 - (($.get(ls) & 1) << 1);
-
-    return segments
-        .slice(1)
-        .reduce((r, s, i) => r | (($.get(s) & 0x1F) << ((i * 5) + 4)), ($.get(ls) & 0x1F) >> 1) * sign;
-}
-
-function decodeVLQBase64Array(string): any {
-    const
-        array = Array.from(string).map(e => base64LU.get(<string>e)),
-        out_array = [];
-
-    let start = 0;
-
-    for (let i = 0; i < array.length; i++) {
-        if (!(array[i] & 0x20)) {
-
-            const
-                VLQ = array.slice(start, i + 1),
-                ls = VLQ[0],
-                sign = 1 - ((ls & 1) << 1),
-                val = VLQ
-                    .slice(1)
-                    .reduce((r, s, i) => r | ((s & 0x1F) << ((i * 5) + 4)), (ls & 0x1F) >> 1) * sign;
-            out_array.push(val);
-
-            start = i + 1;
-        }
-    }
-
-    return out_array;
-}
-export function getPositionLexerFromJsonSourceMap(line: number, column: number, source: string | SourceMap): Lexer {
-
-
+export function decodeJSONSourceMap(source): SourceMap {
     if (typeof source == "string")
         source = <object>JSON.parse(<string>source);
 
@@ -297,7 +147,7 @@ export function getPositionLexerFromJsonSourceMap(line: number, column: number, 
         line_diff = 0,
         source_diff = 0;
 
-    const mappings = source.mappings.split(";").map(line => {
+    source.mappings = source.mappings.split(";").map(line => {
 
         let col_diff = 0;
 
@@ -323,11 +173,17 @@ export function getPositionLexerFromJsonSourceMap(line: number, column: number, 
         };
     });
 
-    const segments = mappings[line - 1].segments;
+    return source;
+}
+
+export function getSourceLineColumn(line: number, column: number, source: SourceMap) {
+
+    const
+        segments = source.mappings[line - 1].segments;
 
     let
         prev_col = segments[0].column,
-        seg = null;
+        seg: Segment = null;
 
     for (let i = 1; i < segments.length; i++) {
 
@@ -341,14 +197,31 @@ export function getPositionLexerFromJsonSourceMap(line: number, column: number, 
         seg = segments[i];
     }
 
+    return {
+        line: seg.original_line,
+        column: seg.original_column,
+        source: seg.source ? source.sources[seg.source] : "",
+        name: seg.original_name ? source.names[seg.original_name] : ""
+    };
+}
+
+export function getPositionLexerFromJSONSourceMap(line: number, column: number, JSON_source: string): Lexer {
+
+    if (typeof JSON_source != "string")
+        throw TypeError("Expected a JSON string");
+
+    const
+        source = decodeJSONSourceMap(JSON_source),
+        seg = getSourceLineColumn(line, column, source);
+
     let content = source.sourceContent[seg.source];
 
     const lex = new Lexer(content);
 
-    // lex.CHARACTERS_ONLY = true;
+    lex.CHARACTERS_ONLY = true;
 
     while (!lex.END) {
-        if (lex.line == seg.original_line && lex.char >= seg.original_column) break;
+        if (lex.line == seg.line && lex.char > seg.column) break;
         lex.next();
     }
 
