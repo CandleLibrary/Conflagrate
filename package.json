@@ -1,18 +1,23 @@
 {
-  "name": "@candlefw/conflagrate",
-  "version": "0.0.3",
-  "description": "Node Tree Traversal Library",
-  "main": "./build/library/conflagrate.js",
-  "types": "./build/types/conflagrate.d.ts",
-  "type": "module",
-  "repository": "https://github.com/candlefw/conflagrate",
-  "author": "Anthony C Weathersby",
-  "license": "MIT",
-  "scripts": {
-    "prepublish": "tsc -p ./tsconfig.json"
-  },
-  "dependencies": {
-    "@candlefw/url": "^0.1.0",
-    "@candlefw/wind": "latest"
-  }
+    "name": "@candlefw/conflagrate",
+    "version": "0.0.3",
+    "description": "Node Tree Traversal Library",
+    "main": "./build/library/conflagrate.js",
+    "types": "./build/types/conflagrate.d.ts",
+    "type": "module",
+    "repository": "https://github.com/candlefw/conflagrate",
+    "author": "Anthony C Weathersby",
+    "license": "MIT",
+    "scripts": {
+        "prepublish": "tsc -p ./tsconfig.json",
+        "test": "cfw.test ./test/candlefw.conflagrate.spec.js",
+        "test.watch": "cfw.test -w ./test/candlefw.conflagrate.spec.js"
+    },
+    "dependencies": {
+        "@candlefw/url": "^0.1.0",
+        "@candlefw/wind": "latest"
+    },
+    "devDependencies": {
+        "@candlefw/test": "0.1.0-alpha"
+    }
 }
