@@ -17,11 +17,11 @@ export type SourceMap = {
     /**
      * An array of original source file names / URIs.
      */
-    sources: Map<string, number>;
+    sources: Array<string>;
     /**
      * An array of the original source file contents.
      */
-    sourceContent?: Array<null | string>;
+    sourceContent?: Array<string>;
     /**
      *
      */
@@ -34,7 +34,6 @@ export type SourceMap = {
      * Each segment is divided by a comma [ , ], where each segment is a type Segment converted to a Base64 VLQ field.
      */
     mappings: Array<Line>;
-    meta: any;
 };
 export type Line = {
     /**
