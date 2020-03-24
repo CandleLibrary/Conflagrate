@@ -14,7 +14,7 @@ import { getChildContainerLength } from "./child_container_functions.js";
  * 
  * 
  */
-type replaceFunctionType<T> = (node: T, child: T, child_index: number, children: T[]) => T;
+type replaceFunctionType<T> = (node: T, child: T, child_index: number, children: T[], alertNewParent: () => void) => T;
 
 export interface replaceYielder<T, K extends keyof T> extends Yielder<T, K> {
     replace_function?: replaceFunctionType<T>;
@@ -75,21 +75,26 @@ function replace<T, K extends keyof T>(
             new_child_children_length = getChildContainerLength(node, key),
             children: T[] = (<T[]><unknown>parent[replaceYielder.key]).slice();
 
-        parent = replaceYielder.replace_function(parent, node, index, children);
+        let REPLACE_PARENT = false;
 
-        if (new_child_children_length < limit)
-            val_length_stack[sp] |= (new_child_children_length << 16);
+        parent = replaceYielder.replace_function(parent, node, index, children, () => REPLACE_PARENT = true);
 
-        if (node == null) {
-            val_length_stack[sp - 1] -= ((1 << 16) + 1);
-            children.splice(index, 1);
-            node_stack[sp] = children[index - 1];
-        } else {
-            children[index] = node;
-            node_stack[sp] = node;
+        if (parent && !REPLACE_PARENT) {
+
+            if (new_child_children_length < limit)
+                val_length_stack[sp] |= (new_child_children_length << 16);
+
+            if (node == null) {
+                val_length_stack[sp - 1] -= ((1 << 16) + 1);
+                children.splice(index, 1);
+                node_stack[sp] = children[index - 1];
+            } else {
+                children[index] = node;
+                node_stack[sp] = node;
+            }
+
+            (<T[]><unknown>parent[replaceYielder.key]) = children;
         }
-
-        (<T[]><unknown>parent[replaceYielder.key]) = children;
 
         replace(replaceYielder, parent, sp - 1, node_stack, val_length_stack);
 
