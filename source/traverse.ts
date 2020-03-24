@@ -12,12 +12,15 @@ import { ASTIterator } from "./types/node_iterator.js";
  */
 export function traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
 
+
+
     let yielder: Yielder<TraversedNode<T>, K> = null;
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
     const AstTraverser: ASTIterator<TraversedNode<T>, K> = {
         [Symbol.iterator]: () => {
+
             let
                 stack_pointer = 0,
                 BEGINNING = true;
@@ -30,9 +33,9 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                 next() {
 
-                    // Prevent infinite loop from a non-acyclic graph;
+                    // Prevent infinite loop from a cyclical graph;
                     if (stack_pointer > 100000)
-                        throw new RangeError("Max node tree depth reached. The tree may be a cyclical graph.");
+                        throw new (class CyclicalError extends Error { })("Max node tree depth reached. The tree may actually be a cyclical graph.");
 
                     if (BEGINNING) {
 
