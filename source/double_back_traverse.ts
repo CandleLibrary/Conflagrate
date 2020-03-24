@@ -2,6 +2,7 @@ import { Yielder } from "./yielder.js";
 import { getChildContainerLength, getChildContainer } from "./child_container_functions.js";
 import { TraversedNode } from "./types/traversed_node.js";
 import { ASTIterator } from "./types/node_iterator.js";
+import { TraverserOutput } from "./traverse.js";
 
 /**
  * This traverses a tree and yields node descending and ascending, depth first. Non-leaf nodes will be yielded 
@@ -16,7 +17,7 @@ export function double_back_traverse<T, K extends keyof T>(node: T, children_key
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    const AstTraverser: ASTIterator<TraversedNode<T>, K> = {
+    const AstTraverser: ASTIterator<TraverserOutput<T>, TraversedNode<T>, K> = {
         [Symbol.iterator]: () => {
             let
                 stack_pointer = 0,

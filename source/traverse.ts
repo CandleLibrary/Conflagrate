@@ -3,6 +3,11 @@ import { getChildContainerLength, getChildContainer } from "./child_container_fu
 import { TraversedNode } from "./types/traversed_node.js";
 import { ASTIterator } from "./types/node_iterator.js";
 
+export interface TraverserOutput<T> {
+    node: TraversedNode<T>;
+    depth: number;
+}
+
 /**
  * This traverses a tree and yields nodes depth first. Uses Yielders 
  * to perform non-destructive transforms on the AST.
@@ -12,13 +17,11 @@ import { ASTIterator } from "./types/node_iterator.js";
  */
 export function traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
 
-
-
     let yielder: Yielder<TraversedNode<T>, K> = null;
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    const AstTraverser: ASTIterator<TraversedNode<T>, K> = {
+    const AstTraverser: ASTIterator<TraverserOutput<T>, TraversedNode<T>, K> = {
         [Symbol.iterator]: () => {
 
             let
@@ -47,7 +50,7 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
                             const y = yielder.yield(node, stack_pointer, node_stack, val_length_stack);
 
-                            if (y) return { value: y, done: false };
+                            if (y) return { value: { node: y, depth: 0 }, done: false };
                         } else {
                             return { value: null, done: true };
                         }
@@ -79,7 +82,7 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
                             if (child) {
                                 const y = yielder.yield(child, stack_pointer, node_stack, val_length_stack);
 
-                                if (y) return { value: y, done: false };
+                                if (y) return { value: { node: y, depth: stack_pointer }, done: false };
                             }
 
                         } else
