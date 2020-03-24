@@ -13,8 +13,8 @@ function* chunk(array):
 }
 /**
  * Creates source map data from a two dimensional number array, where the first
- * dimension are lines and the second dimension are a series of number parsed
- * into a five component tuples comprising:
+ * dimension is a set of arrays that comprise lines and the second 
+ * dimension is a series of numbers parsed into a five component tuples comprising:
  * 
  * `[ column_offset, source_index, original_line, original_column, original_name_index ]`.
  * 
