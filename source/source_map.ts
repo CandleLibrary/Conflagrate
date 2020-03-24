@@ -3,85 +3,91 @@ import { Lexer } from "@candlefw/wind";
 import { encodeVLQBase64, decodeVLQBase64Array } from "./vlq_base64.js";
 import { SourceMap, Segment, Line } from "./types/source_map.js";
 
-export function createSourceMap(): SourceMap {
-    return {
-        version: 3,
-        file: "",
-        names: [],
-        sourceContent: [],
-        sourceRoot: "",
-        sources: new Map,
-        mappings: [],
-        meta: {
-            current_offset: 0,
-            original_column: 0,
-            original_line: 0,
-            current_source: 0,
-            original_source: 0
-        }
-    };
+/**
+ * Extract segment tuples from array;
+ */
+function* chunk(array):
+    Generator<[number, number, number, number, number]> {
+    for (let i = 0; i < array.length; i += 5)
+        yield array.slice(i, i + 5);
 }
-export function createSourceMapEntry(
-    current_line,
-    current_column,
-    original_line,
-    original_column,
-    original_file_name,
-    original_name,
-    source_map?: SourceMap
+/**
+ * Creates source map data from a two dimensional number array, where the first
+ * dimension are lines and the second dimension are a series of number parsed
+ * into a five component tuples comprising:
+ * 
+ * `[ column_offset, source_index, original_line, original_column, original_name_index ]`.
+ * 
+ * Segment data is generated for each tuple, with the column_offset increasing relative to 
+ * the previous tuple.
+ * 
+ * 
+ * @param Array 
+ * @param 
+ * @param number 
+ * @param param3 
+ */
+export function createSourceMap(
+    mapping_arrays: Array<number[]>,
+    file: string = "",
+    root_dir: string = "",
+    sources: string[] = null,
+    names: string[] = null,
+    content: string[] = null
 ): SourceMap {
 
-    if (!source_map)
-        source_map = createSourceMap();
+    const source_map: SourceMap = <SourceMap>{
+        version: 3,
+        file: file || "",
+        sourceRoot: root_dir || "",
+        names: names || [],
+        sourceContent: content || [],
+        sources: sources || [],
+        mappings: []
+    };
 
-    let last_line = source_map.mappings[source_map.mappings.length - 1];
+    let i = 0;
 
-    if (!last_line) {
-        last_line = {
-            index: 0,
-            segments: []
-        };
+    for (const line of mapping_arrays) {
 
-        source_map.mappings.push(last_line);
+        const map_line = <Line>{ segments: [], index: i++ };
+
+        let col_offset = 0;
+
+        for (const [col, source, o_line, o_col, o_name] of chunk(line)) {
+            map_line.segments.push(createSourceMapSegment(col_offset, source, o_line, o_col, o_name));
+            col_offset += col;
+        }
+
+        source_map.mappings.push(map_line);
     }
 
-    while (current_line > last_line.index) {
+    return source_map;
+}
 
-        last_line = {
-            index: last_line.index + 1,
-            segments: []
-        };
-        source_map.mappings.push(last_line);
-    }
+export function createSourceMapSegment(
+    current_column: number,
+    original_source: number,
+    original_line: number,
+    original_column: number,
+    original_name: number,
+): Segment {
 
     let segment = <Segment>{};
 
     segment.column = current_column;
 
-    let source_index = -1;
-
-    if (original_file_name) {
-        if (source_map.sources.has(original_file_name))
-            source_index = source_map.sources.get(original_file_name);
-        else {
-            source_index = source_map.sources.size;
-            source_map.sources.set(original_file_name, source_map.sources.size);
-        }
+    if (original_source > -1) {
+        segment.source = original_source;
+        segment.original_line = original_line + 1;
+        segment.original_column = original_column + 1;
+        segment.original_name = original_name;
     }
 
-    if (source_index > -1) {
-        segment.column = current_column;
-        segment.source = source_index;
-        segment.original_line = original_line;
-        segment.original_column = original_column;
-    }
-
-    last_line.segments.push(<Segment>segment);
-
-    return source_map;
+    return segment;
 };
 
-export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
+export function createSourceMapJSON(map: SourceMap) {
 
     let
         source = 0,
@@ -91,10 +97,10 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
 
     const output = {
         version: map.version,
-        file: map.file || "",
+        file: map.file,
         sourceRoot: map.sourceRoot,
-        sources: Array.from(map.sources.keys()),
-        sourceContent: (map.sourceContent.length > 0) ? map.sourceContent : content,
+        sources: map.sources,
+        sourceContent: map.sourceContent,
         names: map.names,
         mappings: map.mappings.map(line => {
 
@@ -138,6 +144,7 @@ export function createSourceMapJSON(map: SourceMap, ...content: string[]) {
 }
 
 export function decodeJSONSourceMap(source): SourceMap {
+
     if (typeof source == "string")
         source = <object>JSON.parse(<string>source);
 
@@ -178,8 +185,18 @@ export function decodeJSONSourceMap(source): SourceMap {
 
 export function getSourceLineColumn(line: number, column: number, source: SourceMap) {
 
+    const l = source.mappings[line - 1];
+
+    if (!l)
+        return {
+            line: 0,
+            column: 0,
+            source: "",
+            name: ""
+        };
+
     const
-        segments = source.mappings[line - 1].segments;
+        segments = l.segments;
 
     let
         prev_col = segments[0].column,
@@ -200,8 +217,8 @@ export function getSourceLineColumn(line: number, column: number, source: Source
     return {
         line: seg.original_line,
         column: seg.original_column,
-        source: seg.source ? source.sources[seg.source] : "",
-        name: seg.original_name ? source.names[seg.original_name] : ""
+        source: seg.source > -1 ? source.sources[seg.source] : "",
+        name: seg.original_name > -1 ? source.names[seg.original_name] : ""
     };
 }
 
