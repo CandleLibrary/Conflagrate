@@ -79,8 +79,8 @@ export function createSourceMapSegment(
 
     if (original_source > -1) {
         segment.source = original_source;
-        segment.original_line = original_line + 1;
-        segment.original_column = original_column + 1;
+        segment.original_line = original_line;
+        segment.original_column = original_column;
         segment.original_name = original_name;
     }
 
