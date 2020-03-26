@@ -6,14 +6,14 @@
 export type TraversedNode<T> = T & {
     /**
      * Call this method to force the traverser to skip
-     * the traversal of the node's descendents.
+     * the traversal of the node's descendants.
      *
      * This method will be present if the node
      * is yielded from a traverser that has a `make_skippable`
      * Yielder attached to it.
      * 
      * @param {number} - If n is a number, skip to the nth descendent
-     * instead of skipping all descendents.
+     * instead of skipping all descendants.
      */
     skip?: (n?: number) => void;
 

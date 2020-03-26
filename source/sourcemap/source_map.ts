@@ -1,7 +1,7 @@
 import URL from "@candlefw/url";
 import { Lexer } from "@candlefw/wind";
 import { encodeVLQBase64, decodeVLQBase64Array } from "./vlq_base64.js";
-import { SourceMap, Segment, Line } from "./types/source_map.js";
+import { SourceMap, Segment, Line } from "../types/source_map.js";
 
 /**
  * Extract segment tuples from array;
