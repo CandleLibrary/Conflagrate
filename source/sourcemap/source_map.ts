@@ -200,7 +200,7 @@ export function getSourceLineColumn(line: number, column: number, source: Source
 
     let
         prev_col = segments[0].column,
-        seg: Segment = null;
+        seg: Segment = { column: 0, original_line: 0, original_column: 0, source: -1, original_name: -1 };
 
     for (let i = 1; i < segments.length; i++) {
 
