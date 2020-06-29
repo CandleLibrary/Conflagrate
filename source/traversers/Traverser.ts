@@ -8,8 +8,7 @@ import { FilterYielder, filter } from "../yielders/filter.js";
 import { ReplaceYielder, ReplaceFunction, replace } from "../yielders/replace.js";
 import { ExtractYielder, extract } from "../yielders/extract_root_node.js";
 import { skip_root } from "../yielders/skip_root.js";
-import { make_skippable } from "../conflagrate.js";
-import { SkippableYielder } from "../yielders/skippable.js";
+import { SkippableYielder, make_skippable } from "../yielders/skippable.js";
 import { MetaRoot } from "./traverse.js";
 import { MutableFunction, MutableYielder, make_mutable } from "../yielders/mutable.js";
 export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> {
@@ -18,11 +17,11 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
     protected sp: number;
     protected BEGINNING: boolean;
     protected yielder: Yielder<TraversedNode<T>, K>;
-    protected readonly meta: B & MetaRoot<K>;
+    protected readonly meta: B & MetaRoot<T, K>;
     protected readonly max_depth: number;
     protected readonly val_length_stack: number[];
     protected readonly node_stack: T[];
-    constructor(root: T, key: K, meta: B & MetaRoot<K>, max_depth: number) {
+    constructor(root: T, key: K, meta: B & MetaRoot<T, K>, max_depth: number) {
         this.key = key;
         this.node = root;
         this.sp = 0;
@@ -65,6 +64,8 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                 //@ts-ignore
                 const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
 
+                meta.parent = null;
+
                 if (y)
                     return { value: { node: y, meta }, done: false };
             }
@@ -74,6 +75,8 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
             }
         }
         while (this.sp >= 0) {
+
+            meta.parent = node_stack[this.sp];
 
             const len = this.val_length_stack[this.sp], limit = (len & 0xFFFF0000) >> 16, index = len & 0xFFFF;
 
@@ -90,7 +93,6 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                 val_length_stack[this.sp] = getChildContainerLength(child, key) << 16;
 
                 if (child) {
-
                     meta.index = index;
                     meta.depth = this.sp;
 

@@ -2,9 +2,11 @@ import { Yielder } from "../yielders/yielder.js";
 import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./Traverser.js";
 
-export interface MetaRoot<K> {
+export interface MetaRoot<T, K> {
     key: K;
     index: number,
+
+    parent: T,
     depth: number;
 }
 
@@ -21,6 +23,6 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    return new Traverser<T, K, MetaRoot<K>>(node, children_key, { depth: 0, key: children_key, index: 0 }, max_depth);
+    return new Traverser<T, K, MetaRoot<T, K>>(node, children_key, { depth: 0, key: children_key, index: 0, parent: null }, max_depth);
 }
 
