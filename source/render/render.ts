@@ -2,6 +2,8 @@ import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./sourc
 
 import { Lexer } from "@candlefw/wind";
 
+const node_id_bit_offset = 23;
+
 export const enum FormatRule {
     MIN_LIST_ELE_LIMIT_SHIFT = 0,
 
@@ -105,7 +107,7 @@ class NodeRenderer<T> {
                 return cond.action.render(node, env, map, level, source_index, names);
         }
 
-        const flag = (node.nodes) ? node.nodes.map((v, i) => !!v ? 1 << i : 0).reduce((r, v) => r | v, 0) : 0xFFFFFFFF;
+        const flag = (node.nodes) ? node.nodes.map((v, i) => !!v ? 1 << i : 0).reduce((r, v) => r | v, 0) : 0x7FFFFFFF;
 
         for (const cond of this.val_presence_branches) {
             if ((cond.flag & flag) == flag)
@@ -118,7 +120,7 @@ class NodeRenderer<T> {
 
 function getRenderRule<T>(node: T & { pos: Lexer, nodes: T[], type: number; }, format_rules: FormatRule[]) {
 
-    const rule = format_rules[(node.type >>> 24) & 0xFF] || 0;
+    const rule = format_rules[(node.type >>> 23) & 0x1FF] || 0;
 
     return {
         min_element_split: (rule >> FormatRule.MIN_LIST_ELE_LIMIT_SHIFT) & 0xF,
@@ -139,8 +141,12 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
         on the surrounding syntax:
         
         1. Value-Index-Insertion
-        @\n*\?? => This indicates the rendering of the node contained in node.nodes[*] should be
+        @\n+\?? => This indicates the rendering of the node contained in node.nodes[\n*] should be
                 rendered and the result inserted at this point. 
+
+        1. Value-Name-Insertion
+        @_\w+\?? => This indicates the rendering of the node referenced at node[\w+] should be
+                rendered and the result inserted at this point.
 
         2. Spread-Value-Insertion
         @...[.\s] => This indicates that all node.nodes should be rendered and results inserted into
@@ -273,6 +279,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                     });
                 }
 
+
                 //Value-Index-Insertion
                 else if (!isNaN(parseInt(string.slice(1)))) {
 
@@ -291,14 +298,38 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
                     last_index = index;
                 }
+                //Value-Name-Insertion
+                else if (string[1] == "_") {
+                    const name = string.slice(2);
 
+                    const index = 0;
+
+                    action_list.push((node: node, env, level, line, map, source_index, names) => {
+
+                        const nodes = Array.isArray(node[name]) ? node[name] : [node[name]];
+
+                        if (CONDITIONAL && !nodes[index]) return { str: "", level, line };
+
+                        return ({
+                            str: render(nodes[index], env, map, source_index, names, level, node, index),
+                            line,
+                            level
+                        });
+                    });
+
+                    last_index = index;
+                }
                 //Non-Value-Insertion
                 else {
                     const prop = string.slice(1);
                     action_list.push((node: node, env, level, line, map, source_index) => {
-                        const str = env.formatString(node[prop], prop, node);
+                        let str = "";
 
-                        if (map) addNewColumn(map, str.length, source_index, node.pos.line, node.pos.column, str);
+                        if (node[prop]) {
+                            str = env.formatString(node[prop], prop, node);
+
+                            if (map) addNewColumn(map, str.length, source_index, node.pos.line, node.pos.column, str);
+                        }
 
                         return { str, level, line };
                     });
@@ -458,7 +489,7 @@ function buildRenderer<T, TypeDefinition>(node_definition: NodeRenderDefinition,
 
                     .from(key.slice(1).matchAll(/not_(\d+)/g))
 
-                    .reduce((r: number, m): number => r ^ (1 << (parseInt(m[1]) - 1)), 0x1FFFFFFF);
+                    .reduce((r: number, m): number => r ^ (1 << (parseInt(m[1]) - 1)), 0x7FFFFFFF);
 
                 present_vals.push({ flag, action: buildRendererFromTemplateString(template_pattern_object[key]) });
 
@@ -484,14 +515,15 @@ type NodeRenderers<T> = NodeRenderer<T>[] & { definitions: Object; };
 export function buildRenderers<T>(node_definitions: Array<NodeRenderDefinition>, typeDefinitions: Object)
     : NodeRenderers<T> {
 
-    const renderers: NodeRenderers<T> = Object.assign(new Array(256), { definitions: typeDefinitions });
+    const renderers: NodeRenderers<T> = Object.assign(new Array(512), { definitions: typeDefinitions });
 
     for (const node_definition of node_definitions) {
 
         const renderer = buildRenderer(node_definition, typeDefinitions);
 
-        renderers[node_definition.type >>> 24] = renderer;
+        renderers[node_definition.type >>> node_id_bit_offset] = renderer;
     }
+
     return renderers;
 
 }
@@ -499,11 +531,11 @@ export function buildRenderers<T>(node_definitions: Array<NodeRenderDefinition>,
 export function buildFormatRules(node_definitions: Array<NodeRenderDefinition>)
     : { format_rules: FormatRule[]; } {
 
-    const format_rules = new Array(256);
+    const format_rules = new Array(512);
 
     for (const node_definition of node_definitions) {
 
-        format_rules[node_definition.type >>> 24] = node_definition.format_rule;
+        format_rules[node_definition.type >>> node_id_bit_offset] = node_definition.format_rule;
 
     }
 
@@ -551,7 +583,7 @@ export function render<T>(
     if (!node)
         throw new Error(`Unknown node type passed to render method from ${type_enum[parent.type]}.nodes[${index}]`);
 
-    const renderer = env.renderers[node.type >>> 24];
+    const renderer = env.renderers[node.type >>> node_id_bit_offset];
 
     if (!renderer)
         throw new Error(`Cannot find string renderer for MinTree node type ${type_enum[node.type]} from ${type_enum[parent.type]}.nodes[${index}]`);
@@ -572,13 +604,13 @@ function prepareRender<T>(
     names: Map<string, number> = null,
 
     //format rules
-    format_rules: FormatRule[] = new Array(256).fill(0),
+    format_rules: FormatRule[] = new Array(512).fill(0),
     formatString = defaultStringFormatter,
 ): string {
 
     const env: RenderEnvironment<T> = {
         formatString: formatString || defaultStringFormatter,
-        format_rules: format_rules || new Array(256).fill(0),
+        format_rules: format_rules || new Array(512).fill(0),
         renderers,
     };
 
