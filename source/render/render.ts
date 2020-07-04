@@ -162,7 +162,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
         3. Conditional-Insertion
         @(\w+,\.+) => This indicates the truthiness of a node property determines whether
-                a string expression is rendered.
+                a string expression is   rendered.
     */
 
     const
@@ -554,7 +554,7 @@ interface RenderEnvironment<T> {
 
 /**
  *  Takes a Renderable Node and produces a string comprising the rendered productions of the ast.
- * @param node - A root node of a MinTree
+ * @param node - A root node
  * @param map - An optional array to store source map information.
  * @param source_index - The index of the source file to store in the source map information.
  * @param names - A Map of translation names that 
@@ -586,7 +586,7 @@ export function render<T>(
     const renderer = env.renderers[node.type >>> node_id_bit_offset];
 
     if (!renderer)
-        throw new Error(`Cannot find string renderer for MinTree node type ${type_enum[node.type]} from ${type_enum[parent.type]}.nodes[${index}]`);
+        throw new Error(`Cannot find string renderer for node type ${type_enum[node.type]} from ${type_enum[parent.type]}.nodes[${index}]`);
     try {
 
         return renderer.render(node, env, level, map, source_index, names);
