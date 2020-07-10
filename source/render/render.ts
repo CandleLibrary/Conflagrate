@@ -166,250 +166,227 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
     */
 
     const
+        regexA = /\t|\n|%|0|1|((\@)(\((\w+),([^\)]+)\s*\))?(\_)?(\w+)?(\n+)?(\.\.\.([^]))?(\?)?)|(\\\?|[^01\n?@%])+/g,
         regex = /\t|\n|%|0|1|(\@\((\w+),([^\)]+)\s*\))|(\@\.\.\.[^])|(\@[\w\_][\w\_]*\??)|(\@[\w]*\??)|(\\\?|[^01\n?@%])+/g,
         actions_iterator: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regex),
+        actions_iteratorA: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
+        actions_iteratorB: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
         action_list: Array<RenderStub<node>> = [];
 
     let last_index = -1;
     //*
-    for (const match of actions_iterator) {
+    for (const match of actions_iteratorA) {
 
         let string = match[0];
+        //*
+        if (match[2] == "@") {
 
-        switch (string[0]) {
+            const CONDITIONAL = !!match[11];
 
-            case "@": {
+            let prop_name = (match[7] && isNaN(match[7])) ? match[7] : "nodes";
 
-                let CONDITIONAL = false;
+            const ARRAYED = !!(match[5]) || prop_name == "nodes";
 
-                if (string.slice(-1) == "?") {
-                    string = string.slice(0, -1);
-                    CONDITIONAL = true;
-                }
+            if (!isNaN(match[7])) last_index = parseInt(match[7]) - 1;
 
-                //Conditional - Insertion
-                if (string.slice(0, 2) == "@(") {
+            const SPREAD = !!match[9];
 
-                    const
-                        CONDITION_PROP_NAME = match[2],
-                        sym = match[3];
+            const delimiter = match[10] == "%" ? "" : match[10];
 
-                    action_list.push((node: node, env, level, line, map, source_index) => {
+            if (!!match[9]) {
 
-                        if (node[CONDITION_PROP_NAME]) {
+                const index = last_index + 1;
 
-                            if (map) addNewColumn(map, String(sym).length, source_index, node.pos.line, node.pos.column, sym);
+                action_list.push((node: node, env, level, line, map, source_index, names) => {
 
-                            return { str: String(sym), level, line };
 
-                        } else return { str: "", level, line };
+                    const { line_split_count, min_element_split, OPTIONAL_SPACE } = getRenderRule(node, env.format_rules),
+                        nodes = node[prop_name];
 
-                    });
-                }
+                    let sub_map = map ? [] : null, len = nodes.length;
 
-                //Spread-Value-Insertion
-                else if (string.slice(0, 4) == "@...") {
+                    const strings = nodes.slice(index).map((n, i) => {
 
-                    const
-                        index = last_index + 1,
-                        delimiter = string[4] == "%" ? "" : string[4];
+                        let child_map: number[][] = map ? [] : null;
 
-                    action_list.push((node: node, env, level, line, map, source_index, names) => {
+                        const str = render(<node>n, env, child_map, source_index, names, level, node, i);
 
-                        const { line_split_count, min_element_split, OPTIONAL_SPACE } = getRenderRule(node, env.format_rules),
-                            nodes = node.nodes;
+                        if (map) sub_map.push(child_map);
 
-                        let sub_map = map ? [] : null, len = nodes.length;
+                        len += str.length;
 
-                        const strings = nodes.slice(index).map((n, i) => {
+                        return str;
+                    }),
+                        SPLIT_LINES = (line_split_count > 0 && min_element_split > 0
+                            && (min_element_split < (len / 10) || nodes.length > min_element_split));
 
-                            let child_map: number[][] = map ? [] : null;
+                    line += strings.length * +SPLIT_LINES;
 
-                            const str = render(<node>n, env, child_map, source_index, names, level, node, i);
+                    if (SPLIT_LINES) {
 
-                            if (map) sub_map.push(child_map);
+                        const
+                            space_fill = tabFill(level),
+                            delim_string = ("\n").repeat(line_split_count) + space_fill,
+                            dls = delimiter.length;
 
-                            len += str.length;
-
-                            return str;
-                        }),
-                            SPLIT_LINES = (line_split_count > 0 && min_element_split > 0
-                                && (min_element_split < (len / 10) || nodes.length > min_element_split));
-
-                        line += strings.length * +SPLIT_LINES;
-
-                        if (SPLIT_LINES) {
-
-                            const
-                                space_fill = tabFill(level),
-                                delim_string = ("\n").repeat(line_split_count) + space_fill,
-                                dls = delimiter.length;
-
-                            if (map) {
-                                const l = sub_map.length;
-                                let i = 0;
-                                for (const child_map of sub_map) {
-                                    addNewLines(map, line_split_count);
-                                    addNewColumn(map, space_fill.length, source_index);
-                                    getLastLine(map).push(...(child_map[0] || []));
-                                    map.push(...child_map.slice(1));
-                                    if (i++ < l)
-                                        addNewColumn(map, dls);
-                                }
+                        if (map) {
+                            const l = sub_map.length;
+                            let i = 0;
+                            for (const child_map of sub_map) {
+                                addNewLines(map, line_split_count);
+                                addNewColumn(map, space_fill.length, source_index);
+                                getLastLine(map).push(...(child_map[0] || []));
+                                map.push(...child_map.slice(1));
+                                if (i++ < l)
+                                    addNewColumn(map, dls);
                             }
-
-                            return { str: delim_string + strings.join(delimiter + delim_string), level, line };
-                        } else {
-                            const
-                                delim_string = delimiter + (" ").repeat(OPTIONAL_SPACE);
-
-                            if (map) {
-                                const l = sub_map.length;
-                                let i = 0;
-                                for (const child_map of sub_map) {
-                                    getLastLine(map).push(...(child_map[0] || []));
-                                    map.push(...child_map.slice(1));
-                                    if (i++ < l)
-                                        addNewColumn(map, delim_string.length);
-                                }
-                            }
-
-                            return { str: strings.join(delim_string), level: -1, line };
                         }
+
+                        return { str: delim_string + strings.join(delimiter + delim_string), level, line };
+                    } else {
+                        const
+                            delim_string = delimiter + (" ").repeat(OPTIONAL_SPACE);
+
+                        if (map) {
+                            const l = sub_map.length;
+                            let i = 0;
+                            for (const child_map of sub_map) {
+                                getLastLine(map).push(...(child_map[0] || []));
+                                map.push(...child_map.slice(1));
+                                if (i++ < l)
+                                    addNewColumn(map, delim_string.length);
+                            }
+                        }
+
+                        return { str: strings.join(delim_string), level: -1, line };
+                    }
+                });
+            } else if (match[3]) {
+
+                const
+                    CONDITION_PROP_NAME = match[4],
+                    sym = match[5];
+
+                action_list.push((node: node, env, level, line, map, source_index) => {
+
+                    if (node[CONDITION_PROP_NAME]) {
+
+                        if (map) addNewColumn(map, String(sym).length, source_index, node.pos.line, node.pos.column, sym);
+
+                        return { str: String(sym), level, line };
+
+                    } else return { str: "", level, line };
+
+                });
+            } else if (ARRAYED) {
+                const index = last_index;
+                const string = [...actions_iteratorB];
+
+                action_list.push((node: node, env, level, line, map, source_index, names) => {
+
+                    const d = string;
+
+
+                    if (CONDITIONAL && !node[prop_name][index]) return { str: "", level, line, d };
+
+                    return ({
+                        str: render(node[prop_name][index], env, map, source_index, names, level, node, index),
+                        line,
+                        level
                     });
-                }
+                });
+            } else {
+                action_list.push((node: node, env, level, line, map, source_index) => {
 
+                    let str = "";
 
-                //Value-Index-Insertion
-                else if (!isNaN(parseInt(string.slice(1)))) {
+                    if (node[prop_name]) {
+                        str = env.formatString(node[prop_name], prop_name, node);
 
-                    const index = parseInt(string.slice(1)) - 1;
+                        if (map) addNewColumn(map, str.length, source_index, node.pos.line, node.pos.column, str);
+                    }
 
-                    action_list.push((node: node, env, level, line, map, source_index, names) => {
+                    return { str, level, line };
+                });
+            }
+        } else
+            switch (string[0]) {
+                
+                case "\n": {
 
-                        if (CONDITIONAL && !node.nodes[index]) return { str: "", level, line };
-
-                        return ({
-                            str: render(node.nodes[index], env, map, source_index, names, level, node, index),
-                            line,
-                            level
-                        });
-                    });
-
-                    last_index = index;
-                }
-                //Value-Name-Insertion
-                else if (string[1] == "_") {
-                    const name = string.slice(2);
-
-                    const index = 0;
-
-                    action_list.push((node: node, env, level, line, map, source_index, names) => {
-
-                        const nodes = Array.isArray(node[name]) ? node[name] : [node[name]];
-
-                        if (CONDITIONAL && !nodes[index]) return { str: "", level, line };
-
-                        return ({
-                            str: render(nodes[index], env, map, source_index, names, level, node, index),
-                            line,
-                            level
-                        });
-                    });
-
-                    last_index = index;
-                }
-                //Non-Value-Insertion
-                else {
-                    const prop = string.slice(1);
                     action_list.push((node: node, env, level, line, map, source_index) => {
-                        let str = "";
 
-                        if (node[prop]) {
-                            str = env.formatString(node[prop], prop, node);
+                        const { new_line_count } = getRenderRule(node, env.format_rules),
+                            str = new_line_count > 0 ? ("\n").repeat(new_line_count) + tabFill(level) : "";
 
-                            if (map) addNewColumn(map, str.length, source_index, node.pos.line, node.pos.column, str);
+                        line += new_line_count;
+
+                        if (map && new_line_count > 0) {
+                            addNewLines(map, new_line_count);
+                            addNewColumn(map, tabFill(level).length, source_index, node.pos.line, node.pos.column);
                         }
 
                         return { str, level, line };
                     });
-                }
-            } break;//*
-            case "\n": {
+                } break;
+                case "%": {
 
-                action_list.push((node: node, env, level, line, map, source_index) => {
-
-                    const { new_line_count } = getRenderRule(node, env.format_rules),
-                        str = new_line_count > 0 ? ("\n").repeat(new_line_count) + tabFill(level) : "";
-
-                    line += new_line_count;
-
-                    if (map && new_line_count > 0) {
-                        addNewLines(map, new_line_count);
-                        addNewColumn(map, tabFill(level).length, source_index, node.pos.line, node.pos.column);
-                    }
-
-                    return { str, level, line };
-                });
-            } break;
-            case "%": {
-
-                action_list.push((node: node, env, level, line, map, source_index) => {
-
-                    const { OPTIONAL_SPACE } = getRenderRule(node, env.format_rules),
-                        str = (" ").repeat(OPTIONAL_SPACE);
-
-                    if (map) incrementColumn(map, OPTIONAL_SPACE);
-
-                    return { str, level, line };
-                });
-            } break;
-
-            case "1": {
-
-                action_list.push((node: node, env, level, line) => {
-
-                    const { indent_count } = getRenderRule(node, env.format_rules);
-
-                    return { str: "", level: level + indent_count, line };
-                });
-            } break;
-
-            case "0": {
-
-                action_list.push((node: node, env, level, line, map, source_index) => {
-
-                    const { indent_count } = getRenderRule(node, env.format_rules),
-                        REMOVE_INDENT = (indent_count && line > 0),
-                        nl = REMOVE_INDENT ? ("\n") + tabFill(level - indent_count) : "";
-
-                    line += +REMOVE_INDENT;
-
-                    if (map && +REMOVE_INDENT) {
-                        addNewLines(map, 1);
-                        addNewColumn(map, tabFill(level - indent_count).length, source_index, node.pos.line, node.pos.column);
-                    }
-
-                    return { str: nl, level: level - indent_count, line };
-
-                });
-            } break;
-
-            default: {
-
-                const str = string.replace(/\\\?/, "?");
-
-                if (str)
                     action_list.push((node: node, env, level, line, map, source_index) => {
 
-                        const out_str = env.formatString(str, "", node);
+                        const { OPTIONAL_SPACE } = getRenderRule(node, env.format_rules),
+                            str = (" ").repeat(OPTIONAL_SPACE);
 
-                        if (map) addNewColumn(map, out_str.length, source_index, node.pos.line, node.pos.column);
+                        if (map) incrementColumn(map, OPTIONAL_SPACE);
 
-                        return { str: out_str, level, line };
+                        return { str, level, line };
                     });
-            } break;
-        }
+                } break;
+
+                case "1": {
+
+                    action_list.push((node: node, env, level, line) => {
+
+                        const { indent_count } = getRenderRule(node, env.format_rules);
+
+                        return { str: "", level: level + indent_count, line };
+                    });
+                } break;
+
+                case "0": {
+
+                    action_list.push((node: node, env, level, line, map, source_index) => {
+
+                        const { indent_count } = getRenderRule(node, env.format_rules),
+                            REMOVE_INDENT = (indent_count && line > 0),
+                            nl = REMOVE_INDENT ? ("\n") + tabFill(level - indent_count) : "";
+
+                        line += +REMOVE_INDENT;
+
+                        if (map && +REMOVE_INDENT) {
+                            addNewLines(map, 1);
+                            addNewColumn(map, tabFill(level - indent_count).length, source_index, node.pos.line, node.pos.column);
+                        }
+
+                        return { str: nl, level: level - indent_count, line };
+
+                    });
+                } break;
+
+                default: {
+
+                    const str = string.replace(/\\\?/, "?");
+
+                    if (str)
+                        action_list.push((node: node, env, level, line, map, source_index) => {
+
+                            const out_str = env.formatString(str, "", node);
+
+                            if (map) addNewColumn(map, out_str.length, source_index, node.pos.line, node.pos.column);
+
+                            return { str: out_str, level, line };
+                        });
+                } break;
+            }
     }
 
     return new RenderAction(action_list);
