@@ -311,7 +311,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
             }
         } else
             switch (string[0]) {
-                
+
                 case "\n": {
 
                     action_list.push((node: node, env, level, line, map, source_index) => {
@@ -521,11 +521,11 @@ export function buildFormatRules(node_definitions: Array<NodeRenderDefinition>)
 
 function defaultStringFormatter<T>(val: any, prop_name: string, node: T): string { return String(val); };
 
+type CustomFormatFunction<T> = (val: any, prop_name: string, node: T) => string;
 interface RenderEnvironment<T> {
     format_rules: Array<number>;
     renderers: NodeRenderers<T>;
-
-    formatString(val: any, prop_name: string, node: T): string;
+    formatString: CustomFormatFunction<T>;
 }
 
 
@@ -582,7 +582,7 @@ function prepareRender<T>(
 
     //format rules
     format_rules: FormatRule[] = new Array(512).fill(0),
-    formatString = defaultStringFormatter,
+    formatString: CustomFormatFunction<T> = defaultStringFormatter,
 ): string {
 
     const env: RenderEnvironment<T> = {
@@ -608,7 +608,7 @@ export function renderWithFormatting<T>(
     node: T,
     renderers: NodeRenderers<T> = null,
     format_rules,
-    formatString = defaultStringFormatter
+    formatString: CustomFormatFunction<T> = defaultStringFormatter,
 ) {
 
     return prepareRender(node, renderers, undefined, undefined, undefined, format_rules, formatString);
@@ -632,7 +632,7 @@ export function renderWithFormattingAndSourceMap<T>(
 
     //format rules
     format_rules,
-    formatString = defaultStringFormatter,
+    formatString: CustomFormatFunction<T> = defaultStringFormatter,
 
 
     //source map data
