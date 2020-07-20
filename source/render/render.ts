@@ -166,7 +166,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
     */
 
     const
-        regexA = /\t|\n|%|0|1|((\@)(\((\w+),([^\)]+)\s*\))?(\_)?(\w+)?(\n+)?(\.\.\.([^]))?(\?)?)|(\\\?|[^01\n?@%])+/g,
+        regexA = /\t|\n|%|0|1|((\@)((\((\w+),([^\)]+)\s*\))|(\_)?(\w+)?(\.\.\.([^]))?(\?)?))|(\\\?|[^01\n?@%])+/g,
         regex = /\t|\n|%|0|1|(\@\((\w+),([^\)]+)\s*\))|(\@\.\.\.[^])|(\@[\w\_][\w\_]*\??)|(\@[\w]*\??)|(\\\?|[^01\n?@%])+/g,
         actions_iterator: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regex),
         actions_iteratorA: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
@@ -177,23 +177,21 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
     //*
     for (const match of actions_iteratorA) {
 
-        let string = match[0];
+        const [string, , AMP, , COND_PROP, COND_PROP_NAME, COND_PROP_VAL, UNDERSCORE, PROP, SPREAD, DELIM, COND] = match;
         //*
-        if (match[2] == "@") {
+        if (AMP == "@") {
 
-            const CONDITIONAL = !!match[11];
+            const CONDITIONAL = COND;
 
-            let prop_name = (match[7] && isNaN(match[7])) ? match[7] : "nodes";
+            let prop_name = (PROP && isNaN(PROP)) ? PROP : "nodes";
 
-            const ARRAYED = !!(match[5]) || prop_name == "nodes";
+            const ARRAYED = !!(UNDERSCORE) || prop_name == "nodes";
 
-            if (!isNaN(match[7])) last_index = parseInt(match[7]) - 1;
+            if (!isNaN(PROP)) last_index = parseInt(PROP) - 1;
 
-            const SPREAD = !!match[9];
+            const delimiter = DELIM == "%" ? "" : DELIM;
 
-            const delimiter = match[10] == "%" ? "" : match[10];
-
-            if (!!match[9]) {
+            if (!!SPREAD) {
 
                 const index = last_index + 1;
 
@@ -261,11 +259,11 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                         return { str: strings.join(delim_string), level: -1, line };
                     }
                 });
-            } else if (match[3]) {
+            } else if (!!COND_PROP) {
 
                 const
-                    CONDITION_PROP_NAME = match[4],
-                    sym = match[5];
+                    CONDITION_PROP_NAME = COND_PROP_NAME,
+                    sym = COND_PROP_VAL;
 
                 action_list.push((node: node, env, level, line, map, source_index) => {
 
