@@ -1,3 +1,5 @@
+import { addModuleToCFW } from "@candlefw/cfw";
+
 import { filter } from "./yielders/filter.js";
 
 import { make_replaceable } from "./yielders/replaceable.js";
@@ -37,9 +39,11 @@ import {
     renderWithSourceMap,
     renderWithFormattingAndSourceMap
 } from "./render/render.js";
+import { copy } from "./copy.js";
 
 
 export {
+    copy,
     // Source Map
     SourceMap,
     createSourceMapJSON,
@@ -71,3 +75,34 @@ export {
     renderWithSourceMap,
     renderWithFormattingAndSourceMap
 };
+
+addModuleToCFW({
+    copy,
+
+    // Source Map
+    createSourceMapJSON,
+    decodeJSONSourceMap,
+    getSourceLineColumn,
+    createSourceMap,
+    getPositionLexerFromJSONSourceMap,
+
+    //Traversal
+    skip_root,
+    traverse,
+    double_back_traverse,
+    extract,
+    filter,
+    make_replaceable,
+    make_skippable,
+    replace,
+    add_parent,
+    bit_filter,
+
+    //Rendering
+    buildRenderers,
+    buildFormatRules,
+    renderCompressed,
+    renderWithFormatting,
+    renderWithSourceMap,
+    renderWithFormattingAndSourceMap
+}, "conflagrate");

@@ -64,7 +64,7 @@ class RenderAction<T> {
             string.push(str);
         }
 
-        return string.join("");
+        return env.formatString(string.join(""), "@full_render", node);
     }
 }
 
@@ -101,16 +101,15 @@ class NodeRenderer<T> {
         source_index: number = -1,
         names = null
     ): string {
-
         for (const cond of this.condition_branches) {
             if (!!node[cond.prop])
                 return cond.action.render(node, env, map, level, source_index, names);
         }
 
-        const flag = (node.nodes) ? node.nodes.map((v, i) => !!v ? 1 << i : 0).reduce((r, v) => r | v, 0) : 0x7FFFFFFF;
+        const flag = (node.nodes) ? node.nodes.map((v, i) => !!v ? 1 << i : 0).reduce((r, v) => r ^ v, 0) : 0x7FFFFFFF;
 
         for (const cond of this.val_presence_branches) {
-            if ((cond.flag & flag) == flag)
+            if ((cond.flag | flag) == cond.flag)
                 return cond.action.render(node, env, map, level, source_index, names);
         }
 
@@ -120,7 +119,7 @@ class NodeRenderer<T> {
 
 function getRenderRule<T>(node: T & { pos: Lexer, nodes: T[], type: number; }, format_rules: FormatRule[]) {
 
-    const rule = format_rules[(node.type >>> 23) & 0x1FF] || 0;
+    const rule = format_rules[(node.type >>> node_id_bit_offset) & 0x1FF] || 0;
 
     return {
         min_element_split: (rule >> FormatRule.MIN_LIST_ELE_LIMIT_SHIFT) & 0xF,
@@ -171,16 +170,14 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
 
     const
-        regexA = /\t|\n|%|0|1|((\@)((\((\w+),([^\)]+)\s*\))|(\_)?(\w+)?(\.\.\.([^]))?(\?)?))|(\\\?|[^01\n?@%])+/g,
-        regex = /\t|\n|%|0|1|(\@\((\w+),([^\)]+)\s*\))|(\@\.\.\.[^])|(\@[\w\_][\w\_]*\??)|(\@[\w]*\??)|(\\\?|[^01\n?@%])+/g,
-        actions_iterator: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regex),
-        actions_iteratorA: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
-        actions_iteratorB: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
+        regexA = /\t|\n|%|\^0|\^1|((\@)((\((\w+),([^\)]+)\s*\))|(\_)?(\w+)?(\.\.\.([^]))?(\?)?))|(\\\?|[^\^\n?@%]|(?:\\)\^)+/g,
+        actions_iterator: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
+        actions_iterator2: IterableIterator<RegExpMatchArray> = template_pattern.matchAll(regexA),
         action_list: Array<RenderStub<node>> = [];
 
     let last_index = -1;
     //*
-    for (const match of actions_iteratorA) {
+    for (const match of actions_iterator) {
 
         const [string, , AMP, , COND_PROP, COND_PROP_NAME, COND_PROP_VAL, UNDERSCORE, PROP, SPREAD, DELIM, COND] = match;
         //*
@@ -219,7 +216,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                         len += str.length;
 
                         return str;
-                    }),
+                    }).filter(s => s !== ""),
                         SPLIT_LINES = (line_split_count > 0 && min_element_split > 0
                             && (min_element_split < (len / 10) || nodes.length > min_element_split));
 
@@ -283,17 +280,21 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                 });
             } else if (ARRAYED) {
                 const index = last_index;
-                const string = [...actions_iteratorB];
+                const string = [...actions_iterator2];
 
                 action_list.push((node: node, env, level, line, map, source_index, names) => {
 
                     const d = string;
 
+                    let prop = node[prop_name];
 
-                    if (CONDITIONAL && !node[prop_name][index]) return { str: "", level, line, d };
+                    if (Array.isArray(prop))
+                        prop = prop[index];
+
+                    if (CONDITIONAL && !prop) return { str: "", level, line, d };
 
                     return ({
-                        str: render(node[prop_name][index], env, map, source_index, names, level, node, index),
+                        str: render(prop, env, map, source_index, names, level, node, index),
                         line,
                         level
                     });
@@ -302,6 +303,8 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                 action_list.push((node: node, env, level, line, map, source_index) => {
 
                     let str = "";
+
+                    if (CONDITIONAL && !node[prop_name]) return { str: "", level, line, d: "" };
 
                     if (node[prop_name]) {
                         str = env.formatString(node[prop_name], prop_name, node);
@@ -312,8 +315,10 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                     return { str, level, line };
                 });
             }
-        } else
+        } else {
+
             switch (string[0]) {
+
 
                 case "\n": {
 
@@ -345,34 +350,33 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                     });
                 } break;
 
-                case "1": {
+                case "^": {
 
-                    action_list.push((node: node, env, level, line) => {
+                    if (string == "^1") {
+                        action_list.push((node: node, env, level, line) => {
 
-                        const { indent_count } = getRenderRule(node, env.format_rules);
+                            const { indent_count } = getRenderRule(node, env.format_rules);
 
-                        return { str: "", level: level + indent_count, line };
-                    });
-                } break;
+                            return { str: "", level: level + indent_count, line };
+                        });
 
-                case "0": {
+                    } else {
+                        action_list.push((node: node, env, level, line, map, source_index) => {
 
-                    action_list.push((node: node, env, level, line, map, source_index) => {
+                            const { indent_count } = getRenderRule(node, env.format_rules),
+                                REMOVE_INDENT = (indent_count && line > 0),
+                                nl = REMOVE_INDENT ? ("\n") + tabFill(level - indent_count) : "";
 
-                        const { indent_count } = getRenderRule(node, env.format_rules),
-                            REMOVE_INDENT = (indent_count && line > 0),
-                            nl = REMOVE_INDENT ? ("\n") + tabFill(level - indent_count) : "";
+                            line += +REMOVE_INDENT;
 
-                        line += +REMOVE_INDENT;
+                            if (map && +REMOVE_INDENT) {
+                                addNewLines(map, 1);
+                                addNewColumn(map, tabFill(level - indent_count).length, source_index, node.pos.line, node.pos.column);
+                            }
 
-                        if (map && +REMOVE_INDENT) {
-                            addNewLines(map, 1);
-                            addNewColumn(map, tabFill(level - indent_count).length, source_index, node.pos.line, node.pos.column);
-                        }
-
-                        return { str: nl, level: level - indent_count, line };
-
-                    });
+                            return { str: nl, level: level - indent_count, line };
+                        });
+                    }
                 } break;
 
                 default: {
@@ -390,6 +394,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                         });
                 } break;
             }
+        }
     }
 
     return new RenderAction(action_list);
@@ -499,6 +504,8 @@ export function buildRenderers<T>(node_definitions: Array<NodeRenderDefinition>,
 
     for (const node_definition of node_definitions) {
 
+
+
         const renderer = buildRenderer(node_definition, typeDefinitions);
 
         renderers[node_definition.type >>> node_id_bit_offset] = renderer;
@@ -560,18 +567,29 @@ export function render<T>(
 
     const type_enum = env.renderers.definitions;
 
-    if (!node)
+    if (!node) {
+        throw parent.pos.createWindSyntaxError(`Unknown node type passed to render method from ${type_enum[parent.type]}.nodes[${index}]`);
         throw new Error(`Unknown node type passed to render method from ${type_enum[parent.type]}.nodes[${index}]`);
+    }
 
     const renderer = env.renderers[node.type >>> node_id_bit_offset];
 
-    if (!renderer)
+    if (!renderer) {
+        //if (parent && parent.pos && parent.pos instanceof Lexer) {
+        throw node.pos.createWindSyntaxError(`Cannot find renderer for ${type_enum[parent.type]} ${parent !== parent ? `child of ${type_enum[parent.type]}.nodes[${index}]` : parent.type}:\n`);
+        //} else
         throw new Error(`Cannot find string renderer for node type ${type_enum[node.type]} from ${type_enum[parent.type]}.nodes[${index}]`);
-    try {
+    }
 
+    try {
         return renderer.render(node, env, level, map, source_index, names);
     } catch (e) {
-        throw new Error(`Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}:\n ${e.message}`);
+        if (!e.IS_WIND && node && node.pos && node.pos instanceof Lexer) {
+            const error = node.pos.createWindSyntaxError(`${e.message}\n Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}`);
+            error.IS_WIND = true;
+            throw e;
+        } else
+            throw new Error(`Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}:\n ${e.message}`);
     }
 }
 
