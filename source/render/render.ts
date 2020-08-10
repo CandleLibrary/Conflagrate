@@ -201,7 +201,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
 
                     const { line_split_count, min_element_split, OPTIONAL_SPACE } = getRenderRule(node, env.format_rules),
-                        nodes = node[prop_name];
+                        nodes = node[prop_name] || [];
 
                     let sub_map = map ? [] : null, len = nodes.length;
 
