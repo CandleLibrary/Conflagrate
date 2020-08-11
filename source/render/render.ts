@@ -23,7 +23,7 @@ export const enum FormatRule {
 }
 
 function tabFill(count: number): string {
-    return ("    ").repeat(count);
+    return ("    ").repeat(count > 0 ? count : 0);
 }
 
 
