@@ -440,24 +440,7 @@ function buildRenderer<T, TypeDefinition>(node_definition: NodeRenderDefinition,
 
     let _default: RenderAction<T> = null;
 
-    /* Elision nodes are special cases that have a unique render action. for compatibility with cfw.js */
-    //@ts-ignore
-    if (node_definition.type == typeDefinitions.Elision) {
-
-        _default = new RenderAction(
-
-            [(n, m, level, line, map) => {
-
-                //@ts-ignore
-                if (map) addNewColumn(map, n.count, n.pos.line, n.pos.column);
-
-                //@ts-ignore
-                return { str: (",").repeat(n.count), level, line };
-            }]
-
-        );
-
-    } else if (typeof template_pattern == "object") {
+    if (typeof template_pattern == "object") {
 
 
         const template_pattern_object = template_pattern;
