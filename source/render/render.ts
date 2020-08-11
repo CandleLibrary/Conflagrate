@@ -514,7 +514,8 @@ export function buildFormatRules(node_definitions: Array<NodeRenderDefinition>)
 
 function defaultStringFormatter<T>(val: any, prop_name: string, node: T): string { return String(val); };
 
-type CustomFormatFunction<T> = (val: any, prop_name: string, node: T) => string;
+export type CustomFormatFunction<T> = (val: string, prop_name: "@full-render" | string, node: T) => string;
+
 interface RenderEnvironment<T> {
     format_rules: Array<number>;
     renderers: NodeRenderers<T>;

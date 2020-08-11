@@ -37,7 +37,8 @@ import {
     renderCompressed,
     renderWithFormatting,
     renderWithSourceMap,
-    renderWithFormattingAndSourceMap
+    renderWithFormattingAndSourceMap,
+    CustomFormatFunction
 } from "./render/render.js";
 import { copy } from "./copy.js";
 
@@ -67,6 +68,7 @@ export {
     bit_filter,
 
     //Rendering
+    CustomFormatFunction,
     FormatRule,
     buildRenderers,
     buildFormatRules,
