@@ -166,6 +166,8 @@ function getRenderRule<T>(node: T & { pos: Lexer, nodes: T[], type: number; }, f
 */
 function buildRendererFromTemplateString<T>(template_pattern: string): RenderAction<T> {
 
+    if (!template_pattern) return new RenderAction([]);
+
     type node = T & { pos: Lexer, nodes: node[], type: number; };
 
 
@@ -216,7 +218,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                         len += str.length;
 
                         return str;
-                    }).filter(s => s !== ""),
+                    }).filter(s => s !== "").map(str => str == "%%empty%%" ? "" : str),
                         SPLIT_LINES = (line_split_count > 0 && min_element_split > 0
                             && (min_element_split < (len / 10) || nodes.length > min_element_split));
 
@@ -514,8 +516,7 @@ export function buildFormatRules(node_definitions: Array<NodeRenderDefinition>)
 
 function defaultStringFormatter<T>(val: any, prop_name: string, node: T): string { return String(val); };
 
-export type CustomFormatFunction<T> = (val: string, prop_name: "@full-render" | string, node: T) => string;
-
+export type CustomFormatFunction<T> = (val: string, prop_name: "@full_render" | string, node: T) => string;
 interface RenderEnvironment<T> {
     format_rules: Array<number>;
     renderers: NodeRenderers<T>;
@@ -605,8 +606,9 @@ function prepareRender<T>(
 export function renderCompressed<T>(
     node: T,
     renderers: NodeRenderers<T> = null,
+    formatString: CustomFormatFunction<T> = defaultStringFormatter,
 ) {
-    return prepareRender<T>(node, renderers);
+    return prepareRender<T>(node, renderers, undefined, undefined, undefined, undefined, formatString);
 }
 
 export function renderWithFormatting<T>(
@@ -627,8 +629,9 @@ export function renderWithSourceMap<T>(
     map: Array<number[]> = null,
     source_index = -1,
     names: Map<string, number> = null,
+    formatString: CustomFormatFunction<T> = defaultStringFormatter,
 ) {
-    return prepareRender(node, renderers, map, source_index, names);
+    return prepareRender(node, renderers, map, source_index, names, undefined, formatString);
 }
 
 export function renderWithFormattingAndSourceMap<T>(
