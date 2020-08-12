@@ -14,7 +14,15 @@ export function incrementColumn(map: Array<number[]>, column: number) {
     ln[ln.length - 5] += column;
 }
 ;
-export function addNewColumn(map: Array<number[]>, column: number, source_index: number = -1, original_line: number = 0, original_col: number = 0, name: string = "", names: Map<string, number> = null) {
+export function addNewColumn(
+    map: Array<number[]>,
+    column: number,
+    source_index: number = -1,
+    original_line: number = 0,
+    original_col: number = 0,
+    name: string = "",
+    names: Map<string, number> = null
+) {
     let name_index = -1;
     if (name && names) {
         if (!names.has(name))
@@ -22,6 +30,6 @@ export function addNewColumn(map: Array<number[]>, column: number, source_index:
         name_index = names.get(name);
     }
     if (column > 0)
-        getLastLine(map).push(column, source_index, original_line, original_col, name_index);
+        getLastLine(map).push(column, source_index, original_line, original_col - 1, name_index);
 }
 ;

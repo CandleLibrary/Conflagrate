@@ -20,12 +20,13 @@ function* chunk(array):
  * 
  * Segment data is generated for each tuple, with the column_offset increasing relative to 
  * the previous tuple.
- * 
- * 
- * @param Array 
- * @param 
- * @param number 
- * @param param3 
+
+ * @param mapping_arrays 
+ * @param file     Name of source file.
+ * @param root_dir Root directory to look for source files.
+ * @param sources  An array of original source file names / URIs.
+ * @param names 
+ * @param content  An array of the original source file strings
  */
 export function createSourceMap(
     mapping_arrays: Array<number[]>,
@@ -42,6 +43,7 @@ export function createSourceMap(
         sourceRoot: root_dir || "",
         names: names || [],
         sourceContent: content || [],
+        /*An array of the original source file contents.*/
         sources: sources || [],
         mappings: []
     };
