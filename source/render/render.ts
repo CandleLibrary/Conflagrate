@@ -488,9 +488,7 @@ export function buildRenderers<T>(node_definitions: Array<NodeRenderDefinition>,
     const renderers: NodeRenderers<T> = Object.assign(new Array(512), { definitions: typeDefinitions });
 
     for (const node_definition of node_definitions) {
-
-
-
+        
         const renderer = buildRenderer(node_definition, typeDefinitions);
 
         renderers[node_definition.type >>> node_id_bit_offset] = renderer;
@@ -505,11 +503,8 @@ export function buildFormatRules(node_definitions: Array<NodeRenderDefinition>)
 
     const format_rules = new Array(512);
 
-    for (const node_definition of node_definitions) {
-
+    for (const node_definition of node_definitions)
         format_rules[node_definition.type >>> node_id_bit_offset] = node_definition.format_rule;
-
-    }
 
     return { format_rules };
 }
