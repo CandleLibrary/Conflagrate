@@ -18,11 +18,18 @@ export class SkippableYielder<T, K extends keyof T> extends Yielder<T, K> {
     }
 
     /**
-    * Adds a skip method to the node, which, when called, causes the traverser to skip the node's children
+    * Adds a skip method to the node, which, when called, causes the traverser to skip over a certain 
+    * number of the nodes children.
+    * 
+    * @param skip_to_child_index The index of child node to skip to. If undefined, all child nodes are skipped.
     */
-    skip(n: number = 0) {
+    skip(skip_to_child_index: number = Infinity) {
+
         const { stack_pointer, val_length_stack } = this;
-        val_length_stack[stack_pointer] = (val_length_stack[stack_pointer] & 0xFFFF0000) | n;
+
+        if (skip_to_child_index == undefined) skip_to_child_index = ((val_length_stack[stack_pointer] & 0xFFFF0000) >> 16) + 1;
+
+        val_length_stack[stack_pointer] = (val_length_stack[stack_pointer] & 0xFFFF0000) | skip_to_child_index;
     }
 
     protected yield(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[], meta) {

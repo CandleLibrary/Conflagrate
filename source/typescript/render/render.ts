@@ -40,8 +40,11 @@ type RenderStub<T> = (
 class RenderAction<T> {
     action_list: Array<RenderStub<T>>;
 
-    constructor(action_list: Array<RenderStub<T>>) {
+    original_string: string;
+
+    constructor(action_list: Array<RenderStub<T>>, original_string: string = "undeifned") {
         this.action_list = action_list;
+        this.original_string = original_string;
     }
 
     render(
@@ -78,7 +81,7 @@ interface ValuePresenceBranch<T> {
     action: RenderAction<T>;
 }
 
-class NodeRenderer<T> {
+export class NodeRenderer<T> {
     condition_branches: Array<ConditionBranch<T>>;
     val_presence_branches: Array<ValuePresenceBranch<T>>;
     default_branch: RenderAction<T>;
@@ -99,21 +102,27 @@ class NodeRenderer<T> {
         level: number = 0,
         map: Array<number[]> = null,
         source_index: number = -1,
-        names = null
+        names = null,
+        /**  Map object to lookup node type names from node type numbers. */
+        lu: Object
     ): string {
-        for (const cond of this.condition_branches) {
-            if (!!node[cond.prop])
-                return cond.action.render(node, env, map, level, source_index, names);
+        try {
+            for (const cond of this.condition_branches) {
+                if (!!node[cond.prop])
+                    return cond.action.render(node, env, map, level, source_index, names);
+            }
+
+            const flag = (node.nodes) ? node.nodes.map((v, i) => !v ? 1 << i : 0).reduce((r, v) => r ^ v, 0x7FFFFFFF) : 0x7FFFFFFF;
+
+            for (const cond of this.val_presence_branches) {
+                if (flag == cond.flag)
+                    return cond.action.render(node, env, map, level, source_index, names);
+            }
+
+            return this.default_branch.render(node, env, map, level, source_index, names);
+        } catch (e) {
+            throw node.pos.throw(e.message + "\n Could not render " + lu[node.type] + ":");
         }
-
-        const flag = (node.nodes) ? node.nodes.map((v, i) => !!v ? 1 << i : 0).reduce((r, v) => r ^ v, 0) : 0x7FFFFFFF;
-
-        for (const cond of this.val_presence_branches) {
-            if ((cond.flag | flag) == cond.flag)
-                return cond.action.render(node, env, map, level, source_index, names);
-        }
-
-        return this.default_branch.render(node, env, map, level, source_index, names);
     }
 }
 
@@ -399,7 +408,7 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
         }
     }
 
-    return new RenderAction(action_list);
+    return new RenderAction(action_list, template_pattern);
 };
 
 export interface NodeRenderDefinition {
@@ -488,7 +497,7 @@ export function buildRenderers<T>(node_definitions: Array<NodeRenderDefinition>,
     const renderers: NodeRenderers<T> = Object.assign(new Array(512), { definitions: typeDefinitions });
 
     for (const node_definition of node_definitions) {
-        
+
         const renderer = buildRenderer(node_definition, typeDefinitions);
 
         renderers[node_definition.type >>> node_id_bit_offset] = renderer;
@@ -562,7 +571,7 @@ export function render<T>(
     }
 
     try {
-        return renderer.render(node, env, level, map, source_index, names);
+        return renderer.render(node, env, level, map, source_index, names, type_enum);
     } catch (e) {
         if (!e.IS_WIND && node && node.pos && node.pos instanceof Lexer) {
             const error = node.pos.createWindSyntaxError(`${e.message}\n Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}`);

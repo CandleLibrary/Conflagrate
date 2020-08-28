@@ -78,7 +78,7 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
             meta.parent = node_stack[this.sp];
 
-            const len = this.val_length_stack[this.sp], limit = (len & 0xFFFF0000) >> 16, index = len & 0xFFFF;
+            const len = this.val_length_stack[this.sp], limit = (len & 0xFFFF0000) >> 16, index = (len & 0xFFFF);
 
             if (this.sp < max_depth && index < limit) {
 

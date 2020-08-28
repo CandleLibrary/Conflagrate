@@ -31,6 +31,7 @@ import { SourceMap } from "./types/source_map.js";
 import { skip_root } from "./yielders/skip_root.js";
 
 import {
+    NodeRenderer,
     FormatRule,
     buildRenderers,
     buildFormatRules,
@@ -75,7 +76,8 @@ export {
     renderCompressed,
     renderWithFormatting,
     renderWithSourceMap,
-    renderWithFormattingAndSourceMap
+    renderWithFormattingAndSourceMap,
+    NodeRenderer,
 };
 
 addModuleToCFW({
@@ -107,4 +109,5 @@ addModuleToCFW({
     renderWithFormatting,
     renderWithSourceMap,
     renderWithFormattingAndSourceMap
+
 }, "conflagrate");
