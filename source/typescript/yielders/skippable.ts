@@ -23,7 +23,7 @@ export class SkippableYielder<T, K extends keyof T> extends Yielder<T, K> {
     * 
     * @param skip_to_child_index The index of child node to skip to. If undefined, all child nodes are skipped.
     */
-    skip(skip_to_child_index: number = Infinity) {
+    skip(skip_to_child_index: number = 0xFFFF) {
 
         const { stack_pointer, val_length_stack } = this;
 
