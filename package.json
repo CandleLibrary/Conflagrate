@@ -9,15 +9,15 @@
     "author": "Anthony C Weathersby",
     "license": "MIT",
     "scripts": {
-        "prepublish": "tsc -p ./tsconfig.json",
+        "prepublishOnly": "tsc -p ./tsconfig.json",
         "test": "cfw.test ./test/candlefw.conflagrate.spec.js",
         "test.watch": "cfw.test -w ./test/candlefw.conflagrate.spec.js"
     },
     "dependencies": {
-        "@candlefw/url": "^0.1.0",
-        "@candlefw/wind": "latest"
+        "@candlefw/url": ">=0.1.3",
+        "@candlefw/wind": ">=0.4.2"
     },
     "devDependencies": {
-        "@candlefw/test": "0.1.0-alpha"
+        "@candlefw/test": ">=0.1.0"
     }
 }
