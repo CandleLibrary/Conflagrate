@@ -92,6 +92,6 @@ export function double_back_traverse<T, K extends keyof T>(node: T, key: K, max_
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    return new DoubleBackTraverser<T, K, MetaRoot<K>>(node, key, { depth: 0, key, index: 0 }, max_depth);
+    return new DoubleBackTraverser<T, K, MetaRoot<T, K>>(node, key, { depth: 0, key, index: 0, parent: null, next: null, prev: null }, max_depth);
 }
 

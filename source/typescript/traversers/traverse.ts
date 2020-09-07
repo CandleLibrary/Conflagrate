@@ -24,6 +24,6 @@ export function traverse<T, K extends keyof T>(node: T, children_key: K, max_dep
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
-    return new Traverser<T, K, MetaRoot<T, K>>(node, children_key, { depth: 0, key: children_key, index: 0, parent: null }, max_depth);
+    return new Traverser<T, K, MetaRoot<T, K>>(node, children_key, { depth: 0, key: children_key, index: 0, parent: null, next: null, prev: null }, max_depth);
 }
 

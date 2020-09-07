@@ -196,11 +196,11 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
             const CONDITIONAL = COND;
 
-            let prop_name = (PROP && isNaN(PROP)) ? PROP : "nodes";
+            let prop_name = (PROP && isNaN(parseInt(PROP))) ? PROP : "nodes";
 
             const ARRAYED = !!(UNDERSCORE) || prop_name == "nodes";
 
-            if (!isNaN(PROP)) last_index = parseInt(PROP) - 1;
+            if (!isNaN(parseInt(PROP))) last_index = parseInt(PROP) - 1;
 
             const delimiter = DELIM == "%" ? "" : DELIM;
 
@@ -574,8 +574,11 @@ export function render<T>(
         return renderer.render(node, env, level, map, source_index, names, type_enum);
     } catch (e) {
         if (!e.IS_WIND && node && node.pos && node.pos instanceof Lexer) {
+
             const error = node.pos.createWindSyntaxError(`${e.message}\n Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}`);
+            //@ts-ignore
             error.IS_WIND = true;
+
             throw e;
         } else
             throw new Error(`Cannot render ${type_enum[node.type]} ${parent !== node ? `child of ${type_enum[parent.type]}.nodes[${index}]` : node.type}:\n ${e.message}`);
