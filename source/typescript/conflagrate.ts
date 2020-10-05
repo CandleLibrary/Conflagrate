@@ -18,6 +18,7 @@ import { add_parent } from "./yielders/add_parent.js";
 
 import { bit_filter } from "./yielders/bit_filter.js";
 
+export * from "./traversers/node_handler.js";
 
 import {
     createSourceMap,
@@ -42,6 +43,7 @@ import {
     renderWithFormattingAndSourceMap,
     CustomFormatFunction
 } from "./render/render.js";
+
 import { copy } from "./copy.js";
 
 
@@ -114,3 +116,5 @@ addModuleToCFW({
     renderWithFormattingAndSourceMap
 
 }, "conflagrate");
+
+
