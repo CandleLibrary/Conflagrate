@@ -26,6 +26,10 @@ function tabFill(count: number): string {
     return ("    ").repeat(count > 0 ? count : 0);
 }
 
+const default_pos = {
+    line: 0,
+    char: 0
+};
 
 type RenderStub<T> = (
     node: T,
@@ -106,6 +110,10 @@ export class NodeRenderer<T> {
         /**  Map object to lookup node type names from node type numbers. */
         lu: Object
     ): string {
+
+        if (!node.pos)
+            node.pos = default_pos;
+
         try {
             for (const cond of this.condition_branches) {
                 if (!!node[cond.prop])
@@ -121,7 +129,7 @@ export class NodeRenderer<T> {
 
             return this.default_branch.render(node, env, map, level, source_index, names);
         } catch (e) {
-            throw node.pos.throw(e.message + "\n Could not render " + lu[node.type] + ":");
+            node.pos.throw(e.message + "\n Could not render " + lu[node.type] + ":");
         }
     }
 }
@@ -557,6 +565,7 @@ export function render<T>(
     const type_enum = env.renderers.definitions;
 
     if (!node) {
+        return "";
         throw parent.pos.createWindSyntaxError(`Unknown node type passed to render method from ${type_enum[parent.type]}.nodes[${index}]`);
         throw new Error(`Unknown node type passed to render method from ${type_enum[parent.type]}.nodes[${index}]`);
     }
