@@ -11,9 +11,6 @@ branches:
     - dev
     - master
 
-addons:
-  chrome: stable
-
 install:
   - yarn install
 
