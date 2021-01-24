@@ -4,4 +4,4 @@
 
 <h3 align=center>Tree Traversal and Source Map Tools</h3>
 
-<p align=center> <sub><b>v0.0.5-alpa</b></sub> </p>
+<p align=center> <sub><b>v0.0.5-alpha</b></sub> </p>
