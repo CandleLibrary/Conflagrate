@@ -9,8 +9,8 @@
     "author": "Anthony C Weathersby",
     "license": "MIT",
     "scripts": {
-        "prepublishOnly": "tsc -p ./tsconfig.json",
-        "test": "cfw.test ./test/**",
+        "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
+        "test": "cfw.test ./test/",
         "test.watch": "cfw.test -w ./test/**"
     },
     "dependencies": {
