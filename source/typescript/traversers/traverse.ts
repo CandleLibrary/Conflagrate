@@ -1,6 +1,6 @@
 import { Yielder } from "../yielders/yielder.js";
 import { TraversedNode } from "../types/traversed_node.js";
-import { Traverser } from "./Traverser.js";
+import { Traverser } from "./core_traverser_class.js";
 
 export interface MetaRoot<T, K> {
     key: K;

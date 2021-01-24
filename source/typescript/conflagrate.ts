@@ -8,7 +8,7 @@ import { traverse } from "./traversers/traverse.js";
 
 import { make_skippable } from "./yielders/skippable.js";
 
-import { double_back_traverse } from "./traversers/double_back_traverse.js";
+import { bidirectionalTraverse } from "./traversers/bidirectional_traverse.js";
 
 import { extract } from "./yielders/extract_root_node.js";
 
@@ -58,10 +58,9 @@ export {
     getPositionLexerFromJSONSourceMap,
 
     //Traversal
-
     skip_root,
     traverse,
-    double_back_traverse,
+    bidirectionalTraverse,
     extract,
     filter,
     make_replaceable,
@@ -98,7 +97,7 @@ addModuleToCFW({
     //Traversal
     skip_root,
     traverse,
-    double_back_traverse,
+    bidirectionalTraverse,
     extract,
     filter,
     make_replaceable,

@@ -57,8 +57,7 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
             this.BEGINNING = false;
 
-            if (!this.yielder)
-                this.yielder = new Yielder<TraversedNode<T>, K>();
+            if (!this.yielder) this.yielder = new Yielder<TraversedNode<T>, K>();
 
             if (node) {
                 //@ts-ignore
@@ -74,6 +73,7 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                 return { value: null, done: true };
             }
         }
+
         while (this.sp >= 0) {
 
             meta.parent = node_stack[this.sp];
@@ -99,18 +99,17 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                     meta.depth = this.sp;
 
                     //@ts-ignore
-                    const y = yielder.yield(child, this.sp, node_stack, val_length_stack, meta);
+                    const y = this.yielder.yield(child, this.sp, node_stack, val_length_stack, meta);
 
                     if (y)
                         return { value: { node: y, meta }, done: false };
                 }
-            }
-            else
+            } else
                 this.sp--;
         }
 
         //@ts-ignore
-        yielder.complete(node_stack[0], this.sp, node_stack, val_length_stack, meta);
+        this.yielder.complete(node_stack[0], this.sp, node_stack, val_length_stack, meta);
 
         return { value: null, done: true };
     }
@@ -134,7 +133,37 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
         return <Traverser<T, K, CombinedYielded<U, B>>><unknown>this;
     }
-    run() { for (const { } of this); }
+    /**
+     * Run the traverser to completion as it is currently configured.
+     * 
+     * If a function is passed as the `fn` argument, an array of 
+     * values returned by the `fn` function will be returned at the end of 
+     * the run. Nullable values will be discarded.
+     * 
+     * @param fn - A function that is passed `node` and `meta` arguments and 
+     * that may optional return a value.
+     */
+    run<A>(fn?: <A>(node: T, meta: B) => A | void): A[] | void {
+        if (fn) {
+            const output = [];
+
+            for (const { node, meta } of this) {
+
+                const val = fn(node, meta);
+
+                if (typeof val == "undefined" || val === null)
+                    continue;
+
+                output.push(val);
+            }
+
+
+            return output;
+        } else {
+            for (const { meta, node } of this);
+            return;
+        }
+    }
 
     makeReplaceable(replace_function?: ReplaceableFunction<T>): Traverser<T, K, CombinedYielded<ReplaceableYielder<T, K>, B>> {
         return this.then(make_replaceable<T, K>(replace_function));
