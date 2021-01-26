@@ -8,7 +8,7 @@ import { traverse } from "./traversers/traverse.js";
 
 import { make_skippable } from "./yielders/skippable.js";
 
-import { bidirectionalTraverse } from "./traversers/bidirectional_traverse.js";
+import { bidirectionalTraverse, TraverseState } from "./traversers/bidirectional_traverse.js";
 
 import { extract } from "./yielders/extract_root_node.js";
 
@@ -82,6 +82,7 @@ export {
     NodeRenderer,
 
     //Types
+    TraverseState
 };
 
 addModuleToCFW({
@@ -112,7 +113,10 @@ addModuleToCFW({
     renderCompressed,
     renderWithFormatting,
     renderWithSourceMap,
-    renderWithFormattingAndSourceMap
+
+
+    //Types
+    TraverseState
 
 }, "conflagrate");
 
