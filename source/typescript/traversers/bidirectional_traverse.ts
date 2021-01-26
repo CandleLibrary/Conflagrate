@@ -5,12 +5,12 @@ import { Traverser } from "./core_traverser_class.js";
 import { MetaRoot } from "./traverse.js";
 
 export enum TraverseState {
-    DOWN,
-    UP,
+    ENTER,
+    EXIT,
     LEAF
 };
 
-class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B & { traverse_state: number; }> {
+class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B & { traverse_state: TraverseState; }> {
 
     yield_on_exit_only: boolean;
 
@@ -77,7 +77,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                     meta.next = children[index + 1];
                     meta.index = index;
                     meta.depth = this.sp;
-                    meta.traverse_state = child_length == 0 ? TraverseState.LEAF : TraverseState.DOWN;
+                    meta.traverse_state = child_length == 0 ? TraverseState.LEAF : TraverseState.ENTER;
 
                     if (!this.yield_on_exit_only || child_length == 0) {
 
@@ -112,7 +112,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                             meta.next = children[index + 1];
                             meta.index = index;
                             meta.depth = this.sp;
-                            meta.traverse_state = TraverseState.UP;
+                            meta.traverse_state = TraverseState.EXIT;
 
                             //@ts-ignore
                             const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
@@ -132,17 +132,17 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
 }
 
 /**
- * This traverses a tree and yields node descending and ascending, depth first. Non-leaf nodes will be yielded 
- * twice. Yielders can be used to perform non-destructive edits on the AST.
+ * This traverses a tree and yields node descending and ascending, depth first. Interior nodes will be yielded 
+ * twice. Yield modifiers can be used to perform both non-destructive and destructive edits on the AST.
  * 
  * Meta object contains an extra property, `traverse_state`, which is an integer with three states:
- * - `0` : The node is yielded for the first time on the down pass.
- * - `1` : The node is yielded for the last time on the up pass.
- * - `2` : The node is a leaf and yielded only once. 
+ * - `0` : The traverser is entering an interior.
+ * - `1` : The traverser is exiting an interior.
+ * - `2` : The traverser is yielding a leaf node. 
  * 
  * @param node - The root node of the AST tree.
  * @param key - The property of a node that contains its immediate descendants
- * @param yield_on_exit_only - The traverser will yield nodes only on the up pass, as it exits the node.
+ * @param yield_on_exit_only - The traverser will yield interior nodes on exit only.
  * @param max_depth - The maximum level of the tree to return nodes from, starting at level 1 for the root node.
  */
 export function bidirectionalTraverse<T, K extends keyof T>(node: T, key: K, yield_on_exit_only: boolean = false, max_depth: number = Infinity) {

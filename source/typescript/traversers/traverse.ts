@@ -1,5 +1,3 @@
-import { Yielder } from "../yielders/yielder.js";
-import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./core_traverser_class.js";
 
 export interface MetaRoot<T, K> {
@@ -19,8 +17,6 @@ export interface MetaRoot<T, K> {
  * @param max_depth - The maximum level of the tree to return nodes from, starting at 1 level for the root node.
  */
 export function traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
-
-    let yielder: Yielder<TraversedNode<T>, K> = null;
 
     max_depth = Math.max(0, Math.min(100000, max_depth - 1));
 
