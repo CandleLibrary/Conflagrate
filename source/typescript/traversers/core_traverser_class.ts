@@ -5,8 +5,8 @@ import { ASTIterator, TraverserOutput, CombinedYielded } from "../types/node_ite
 import { ReplaceableYielder, make_replaceable, ReplaceableFunction } from "../yielders/replaceable.js";
 import { bitFilterYielder, bit_filter } from "../yielders/bit_filter.js";
 import { FilterYielder, filter } from "../yielders/filter.js";
-import { ReplaceYielder, ReplaceFunction, replace } from "../yielders/replace.js";
-import { ExtractYielder, extract } from "../yielders/extract_root_node.js";
+import { ReplaceFunction, replace } from "../yielders/replace.js";
+import { extract } from "../yielders/extract_root_node.js";
 import { skip_root } from "../yielders/skip_root.js";
 import { SkippableYielder, make_skippable } from "../yielders/skippable.js";
 import { MetaRoot } from "./traverse.js";
@@ -143,24 +143,32 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
      * @param fn - A function that is passed `node` and `meta` arguments and 
      * that may optional return a value.
      */
-    run<A>(fn?: <A>(node: T, meta: B) => A | void): A[] | void {
-        if (fn) {
-            const output = [];
+    run<A>(fn?: ((node: T, meta: B) => A) | boolean) {
+
+        if (typeof fn == "boolean" && fn) {
+
+            const output: T[] = [];
+
+            for (const { node, meta } of this) output.push(node);
+
+            return output;
+
+        } else if (typeof fn == "function") {
+
+            const output: A[] = [];
 
             for (const { node, meta } of this) {
 
-                const val = fn(node, meta);
+                const val: A = fn(node, meta);
 
                 if (typeof val == "undefined" || val === null)
                     continue;
 
                 output.push(val);
             }
-
-
             return output;
         } else {
-            for (const { meta, node } of this);
+            for (const { } of this);
             return;
         }
     }
