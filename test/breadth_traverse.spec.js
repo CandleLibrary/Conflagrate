@@ -71,6 +71,7 @@ const control_tree = {
         }]
 };
 
-assert("The id of each node is in the correct order", breadthTraverse(control_tree, "nodes").run((node) => node.id).join("") == ["ABDCEFIKGJLHIOP"]);
-assert(solo, "Each depth of nodes is yielded together", breadthTraverse(control_tree, "nodes").run((node, meta) => meta.depth).join("") == ["01122222333444555"]);
+assert("The id of each node is in the correct order", breadthTraverse(control_tree, "nodes").run((node) => node.id).join("") == ["ABDCEFIKGJLHIMOPN"]);
+assert("The depth assigned to max_depth argument is not exceeded", breadthTraverse(control_tree, "nodes", 4).run((node) => node.id).join("") == ["ABDCEFIKGJL"]);
+assert("Each depth of nodes is in series", breadthTraverse(control_tree, "nodes").run((node, meta) => meta.depth).join("") == ["01122222333444555"]);
 
