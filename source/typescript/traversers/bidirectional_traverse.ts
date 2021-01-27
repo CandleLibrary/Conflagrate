@@ -100,7 +100,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
 
                         const len = this.val_length_stack[this.sp - 1] || 0, index = (len & 0xFFFF);
 
-                        meta.parent = node_stack[this.sp];
+                        meta.parent = node_stack[this.sp - 1];
 
                         const node = node_stack[this.sp];
 
