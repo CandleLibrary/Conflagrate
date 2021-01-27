@@ -10,6 +10,8 @@ import { make_skippable } from "./yielders/skippable.js";
 
 import { bidirectionalTraverse, TraverseState } from "./traversers/bidirectional_traverse.js";
 
+import { breadthTraverse } from "./traversers/breadth_traverse.js";
+
 import { extract } from "./yielders/extract_root_node.js";
 
 import { replace, ReplaceFunction } from "./yielders/replace.js";
@@ -61,6 +63,7 @@ export {
     skip_root,
     traverse,
     bidirectionalTraverse,
+    breadthTraverse,
     extract,
     filter,
     make_replaceable,
@@ -99,6 +102,7 @@ addModuleToCFW({
     skip_root,
     traverse,
     bidirectionalTraverse,
+    breadthTraverse,
     extract,
     filter,
     make_replaceable,
