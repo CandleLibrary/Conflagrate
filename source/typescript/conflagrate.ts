@@ -2,7 +2,7 @@ import { addModuleToCFW } from "@candlefw/cfw";
 
 import { filter } from "./yielders/filter.js";
 
-import { make_replaceable } from "./yielders/replaceable.js";
+import { make_replaceable, replace, ReplaceFunction } from "./yielders/replaceable.js";
 
 import { traverse } from "./traversers/traverse.js";
 
@@ -14,7 +14,7 @@ import { breadthTraverse } from "./traversers/breadth_traverse.js";
 
 import { extract } from "./yielders/extract_root_node.js";
 
-import { replace, ReplaceFunction } from "./yielders/replace.js";
+import { impersonate } from "./yielders/impersonate.js";
 
 import { add_parent } from "./yielders/add_parent.js";
 
@@ -68,7 +68,7 @@ export {
     filter,
     make_replaceable,
     make_skippable,
-    replace,
+    impersonate as replace,
     add_parent,
     ReplaceFunction,
     bit_filter,
@@ -107,6 +107,7 @@ addModuleToCFW({
     filter,
     make_replaceable,
     make_skippable,
+    impersonate,
     replace,
     add_parent,
     bit_filter,
@@ -121,7 +122,6 @@ addModuleToCFW({
 
     //Types
     TraverseState
-
 }, "conflagrate");
 
 

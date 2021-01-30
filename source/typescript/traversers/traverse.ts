@@ -14,7 +14,7 @@ export interface MetaRoot<T, K> {
  * to perform non-destructive transforms on the AST.
  * @param node - The root node of the AST tree.
  * @param children_key - The property of a node that contains its immediate descendants.
- * @param max_depth - The maximum level of the tree to return nodes from, starting at 1 level for the root node.
+ * @param max_depth - The maximum level of the tree to return nodes from, starting at depth 1 for the root node.
  */
 export function traverse<T, K extends keyof T>(node: T, children_key: K, max_depth: number = Infinity) {
 

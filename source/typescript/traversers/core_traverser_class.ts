@@ -1,16 +1,17 @@
-import { Yielder } from "../yielders/yielder.js";
-import { getChildContainerLength, getChildContainer } from "./child_container_functions.js";
+import { ASTIterator, CombinedYielded, TraverserOutput } from "../types/node_iterator.js";
 import { TraversedNode } from "../types/traversed_node.js";
-import { ASTIterator, TraverserOutput, CombinedYielded } from "../types/node_iterator.js";
-import { ReplaceableYielder, make_replaceable, ReplaceableFunction } from "../yielders/replaceable.js";
 import { bitFilterYielder, bit_filter } from "../yielders/bit_filter.js";
-import { FilterYielder, filter } from "../yielders/filter.js";
-import { ReplaceFunction, replace } from "../yielders/replace.js";
 import { extract } from "../yielders/extract_root_node.js";
+import { filter, FilterYielder } from "../yielders/filter.js";
+import { FilterFunction, FilterFunctionYielder, filterWithFunction } from "../yielders/filterFunction.js";
+import { make_mutable, MutableYielder, mutate } from "../yielders/mutable.js";
+import { impersonate as impersonate } from "../yielders/impersonate.js";
+import { make_replaceable, replace, ReplaceFunction, ReplaceableYielder, ReplaceTreeFunction } from "../yielders/replaceable.js";
+import { make_skippable, SkippableYielder } from "../yielders/skippable.js";
 import { skip_root } from "../yielders/skip_root.js";
-import { SkippableYielder, make_skippable } from "../yielders/skippable.js";
+import { Yielder } from "../yielders/yielder.js";
+import { getChildContainer, getChildContainerLength } from "./child_container_functions.js";
 import { MetaRoot } from "./traverse.js";
-import { MutableFunction, MutableYielder, make_mutable } from "../yielders/mutable.js";
 export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> {
     protected readonly key: K;
     protected readonly node: T;
@@ -143,9 +144,9 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
      * @param fn - A function that is passed `node` and `meta` arguments and 
      * that may optional return a value.
      */
-    run<A>(fn?: ((node: T, meta: B) => A) | boolean) {
+    run<A>(fn?: ((node: T, meta: B) => A) | boolean, RETURN_ROOT: boolean = false): A[] | T[] | T {
 
-        if (typeof fn == "boolean" && fn) {
+        if (typeof fn == "boolean" && fn && !RETURN_ROOT) {
 
             const output: T[] = [];
 
@@ -163,22 +164,36 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
                 if (typeof val == "undefined" || val === null)
                     continue;
-
-                output.push(val);
+                if (!RETURN_ROOT) output.push(val);
             }
-            return output;
+            return RETURN_ROOT ? this.node_stack[0] : output;
         } else {
             for (const { } of this);
-            return;
+            return this.node_stack[0];
         }
     }
 
-    makeReplaceable(replace_function?: ReplaceableFunction<T>): Traverser<T, K, CombinedYielded<ReplaceableYielder<T, K>, B>> {
+    /**
+     * Allow another node to take the place of a node in the tree without
+     * changing the structure of the tree
+     * @param replace_function 
+     */
+    impersonate(replace_function: ReplaceFunction<T, K, B>): Traverser<T, K, B> {
+        return this.then(impersonate<T, K, B>(<any>replace_function));
+    }
+    makeReplaceable(replace_function?: ReplaceTreeFunction<T>): Traverser<T, K, CombinedYielded<ReplaceableYielder<T, K>, B>> {
         return this.then(make_replaceable<T, K>(replace_function));
     }
+    replace(replace_function: ReplaceFunction<T, K, B>, replace_tree_function?: ReplaceTreeFunction<T>): Traverser<T, K, B> {
+        return this.then(replace<T, K, B>(replace_function, replace_tree_function));
+    }
 
-    makeMutable(replace_function?: MutableFunction<T>): Traverser<T, K, CombinedYielded<MutableYielder<T, K>, B>> {
-        return this.then(make_mutable<T, K>(replace_function));
+    makeMutable(mutate_tree_function?: ReplaceTreeFunction<T>): Traverser<T, K, CombinedYielded<MutableYielder<T, K>, B>> {
+        return this.then(make_mutable<T, K>(mutate_tree_function));
+    }
+
+    mutate(mutate_function: ReplaceFunction<T, K, B>, mutate_tree_function?: ReplaceTreeFunction<T>): Traverser<T, K, B> {
+        return this.then(mutate<T, K, B>(mutate_function, mutate_tree_function));
     }
 
     bitFilter<A extends keyof T>(key: A, ...bits: number[]): Traverser<T, K, CombinedYielded<bitFilterYielder<T, K>, B>> {
@@ -193,12 +208,12 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
         return this.then(make_skippable<T, K>());
     }
 
-    extract(receiver: { ast: any; }): Traverser<T, K, B> {
-        return this.then(extract(receiver));
+    filterFunction<R extends T>(fn: FilterFunction<T, K, R, B>): Traverser<T, K, CombinedYielded<FilterFunctionYielder<T, K, R, B>, B>> {
+        return this.then(filterWithFunction<T, K, R, B>(fn));
     }
 
-    replace(replace_function: ReplaceFunction<T>): Traverser<T, K, B> {
-        return this.then(replace<T, K>(replace_function));
+    extract(receiver: { ast: any; }): Traverser<T, K, B> {
+        return this.then(extract(receiver));
     }
 
     skipRoot(): Traverser<T, K, B> {
