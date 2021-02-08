@@ -18,6 +18,6 @@
         "@candlefw/wind": "*"
     },
     "devDependencies": {
-        "@candlefw/test": "*"
+        "@candlelib/cure": "*"
     }
 }
