@@ -19,13 +19,18 @@ export class FilterYielder<T, K extends keyof T> extends Yielder<T, K> {
     }
 
 }
+
+type Types<T, K extends keyof T> = T[K];
+
+type FilteredNode<T, G extends T, K extends keyof T, R> = G
+
 /**
  * Filters nodes and yields only those whose property `key` matches one of the values in `types`
  * 
  * @param key - A property name on the node that should be tested for a match.
  * @param types  - A list of possible values that we want property `key` to be.
  */
-export function filter<T, K extends keyof T, D extends keyof T>(key: D, ...types: any[]): FilterYielder<T, K> {
+export function filter<T, K extends keyof T, D extends keyof T>(key: D, ...types: Types<T, K>[]): FilterYielder<T, K> {
 
     const obj = Object.assign(new FilterYielder<T, K>(), {
         filter_key: key,
@@ -33,4 +38,5 @@ export function filter<T, K extends keyof T, D extends keyof T>(key: D, ...types
     });
 
     return obj;
-}
+};
+

@@ -60,13 +60,10 @@ export class ReplaceableYielder<T, K extends keyof T> extends Yielder<T, K> {
         let sp = this.stack_pointer;
 
         //need to trace up the current stack and replace each node with a duplicate
-        let node = replacement_node;
-
-        if (sp > 0) {
-            this.replaceNodes(node_stack, sp, val_length_stack, node, key);
-
+        if (sp > 1) {
+            this.replaceNodes(node_stack, sp, val_length_stack, replacement_node, key);
         } else {
-            node_stack[0] = node;
+            node_stack[1] = replacement_node;
         }
     }
 
@@ -86,6 +83,9 @@ export class ReplaceableYielder<T, K extends keyof T> extends Yielder<T, K> {
         parent = this.replace_tree_function(parent, node, index, children, () => REPLACE_PARENT = true);
 
         if (parent && !REPLACE_PARENT) {
+
+            //If the parent is replaced then the stack pointer should be
+            //reset to the parent's children nodes
 
             if (new_child_children_length < limit)
                 val_length_stack[sp] |= (new_child_children_length << 16);
@@ -120,6 +120,8 @@ export class ReplaceYielder<T, K extends keyof T, B> extends ReplaceableYielder<
     protected yield(node: T, stack_pointer: number, node_stack: T[], val_length_stack: number[], meta): T | null {
 
         const new_node = this.replace_function(node);
+
+        this.stack_pointer = stack_pointer;
 
         if (new_node == null || new_node && new_node !== node) {
 
