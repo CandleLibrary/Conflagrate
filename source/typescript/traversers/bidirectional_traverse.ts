@@ -60,7 +60,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
 
                 meta.parent = node_stack[this.sp];
 
-                const children: T[] = getChildContainer(node_stack[this.sp], key), child = children[index];
+                const child = getChildAtIndex(node_stack[this.sp], key, index);
 
                 val_length_stack[this.sp]++;
 
@@ -73,8 +73,8 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                 val_length_stack[this.sp] = child_length << 16;
 
                 if (child) {
-                    meta.prev = children[index - 1];
-                    meta.next = children[index + 1];
+                    meta.prev = getChildAtIndex(node_stack[this.sp - 1], key, index - 1);
+                    meta.next = getChildAtIndex(node_stack[this.sp - 1], key, index + 1);
                     meta.index = index;
                     meta.depth = this.sp;
                     meta.traverse_state = child_length == 0 ? TraverseState.LEAF : TraverseState.ENTER;
@@ -89,6 +89,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                     }
                 }
             } else {
+
 
                 this.sp--;
 
@@ -106,10 +107,8 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
 
                         if (node) {
 
-                            const children: T[] = getChildContainer(node_stack[this.sp - 1], key);
-
-                            meta.prev = children[index - 1];
-                            meta.next = children[index + 1];
+                            meta.prev = getChildAtIndex(node_stack[this.sp - 1], key, index - 1);
+                            meta.next = getChildAtIndex(node_stack[this.sp - 1], key, index + 1);
                             meta.index = index;
                             meta.depth = this.sp;
                             meta.traverse_state = TraverseState.EXIT;
