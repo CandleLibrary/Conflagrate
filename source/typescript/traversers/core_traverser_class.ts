@@ -90,11 +90,12 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
                 this.sp++;
 
-                node_stack[this.sp] = child;
 
                 val_length_stack[this.sp] = getChildContainerLength(child, key) << 16;
 
                 if (child) {
+
+                    node_stack[this.sp] = child;
                     //meta.prev = children[index + 1];
                     //meta.next = children[index - 1];
                     meta.prev = getChildAtIndex(node_stack[this.sp], key, index + 1);

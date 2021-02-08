@@ -62,7 +62,8 @@ class breadthTraverser<T, K extends keyof T, B> extends Traverser<T, K, B> {
 
             if (index < limit) {
 
-                const children: T[] = getChildContainer(node_stack[this.sp], key),
+                const
+                    children: T[] = getChildContainer(node_stack[this.sp], key),
                     child = children[index];
 
                 val_length_stack[this.sp]++;
@@ -74,19 +75,21 @@ class breadthTraverser<T, K extends keyof T, B> extends Traverser<T, K, B> {
                 val_length_stack[this.sp] = getChildContainerLength(child, key) << 16;
 
                 if (this.sp == this.base_line) {
+
                     this.max_depth_reached = Math.max(this.sp, this.max_depth);
-                    meta.parent = node_stack[this.sp - 1];
-                    meta.prev = children[index - 1];
-                    meta.next = children[index + 1];
-                    meta.index = index;
-                    meta.depth = this.sp;
-
-                    //@ts-ignore
-                    const y = this.yielder.yield(child, this.sp, node_stack, val_length_stack, meta);
-
                     this.sp--;
 
-                    if (y) return { value: { node: y, meta }, done: false };
+                    if (child) {
+                        meta.parent = node_stack[this.sp - 1];
+                        meta.prev = children[index - 1];
+                        meta.next = children[index + 1];
+                        meta.index = index;
+                        meta.depth = this.sp + 1;
+                        //@ts-ignore
+                        const y = this.yielder.yield(child, this.sp, node_stack, val_length_stack, meta);
+
+                        if (y) return { value: { node: y, meta }, done: false };
+                    }
                 }
 
             } else if (this.sp == 0) {
