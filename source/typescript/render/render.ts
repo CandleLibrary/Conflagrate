@@ -245,8 +245,8 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
 
                         const
                             space_fill = tabFill(level),
-                            delim_string = ("\n").repeat(line_split_count) + space_fill,
-                            dls = delimiter.length;
+                            delimiter_string = ("\n").repeat(line_split_count) + space_fill,
+                            delimiter_length = delimiter.length;
 
                         if (map) {
                             const l = sub_map.length;
@@ -257,14 +257,14 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                                 getLastLine(map).push(...(child_map[0] || []));
                                 map.push(...child_map.slice(1));
                                 if (i++ < l)
-                                    addNewColumn(map, dls);
+                                    addNewColumn(map, delimiter_length);
                             }
                         }
 
-                        return { str: delim_string + strings.join(delimiter + delim_string), level, line };
+                        return { str: delimiter_string + strings.join(delimiter + delimiter_string), level, line };
                     } else {
                         const
-                            delim_string = delimiter + (" ").repeat(OPTIONAL_SPACE);
+                            delimiter_string = delimiter + (" ").repeat(OPTIONAL_SPACE);
 
                         if (map) {
                             const l = sub_map.length;
@@ -273,11 +273,11 @@ function buildRendererFromTemplateString<T>(template_pattern: string): RenderAct
                                 getLastLine(map).push(...(child_map[0] || []));
                                 map.push(...child_map.slice(1));
                                 if (i++ < l)
-                                    addNewColumn(map, delim_string.length);
+                                    addNewColumn(map, delimiter_string.length);
                             }
                         }
 
-                        return { str: strings.join(delim_string), level: -1, line };
+                        return { str: strings.join(delimiter_string), level: -1, line };
                     }
                 });
             } else if (!!COND_PROP) {
