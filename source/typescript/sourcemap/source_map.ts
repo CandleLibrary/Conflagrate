@@ -1,7 +1,11 @@
-import URL from "@candlefw/url";
+/**
+ * License https://creativecommons.org/licenses/by-sa/3.0/
+ * 
+ */
+
 import { Lexer } from "@candlefw/wind";
-import { encodeVLQBase64, decodeVLQBase64Array } from "./vlq_base64.js";
-import { SourceMap, Segment, Line } from "../types/source_map.js";
+import { Line, Segment, SourceMap } from "../types/source_map.js";
+import { decodeVLQBase64Array, encodeVLQBase64 } from "./vlq_base64.js";
 
 /**
  * Extract segment tuples from array;
@@ -147,8 +151,11 @@ export function createSourceMapJSON(map: SourceMap) {
 
 export function decodeJSONSourceMap(source): SourceMap {
 
-    if (typeof source == "string")
+    if (typeof source == "string") {
+
         source = <object>JSON.parse(<string>source);
+
+    }
 
     let
         name_diff = 0,
@@ -156,7 +163,9 @@ export function decodeJSONSourceMap(source): SourceMap {
         line_diff = 0,
         source_diff = 0;
 
-    source.mappings = source.mappings.split(";").map(line => {
+    const lines = source.mappings.split(";");
+
+    source.mappings = lines.map(line => {
 
         let col_diff = 0;
 
@@ -190,15 +199,36 @@ export function decodeJSONSourceMap(source): SourceMap {
  * @param column 
  * @param source 
  */
-export function getSourceLineColumn(line: number, column: number, source: SourceMap) {
-
+export function getSourceLineColumn(line: number, column: number, source: SourceMap): {
+    /**
+     * Line number in the source code, 1-based indexed
+     * Is `-1` if the the line could not be mapped back to 
+     * the source. 
+     */
+    line: number,
+    /**
+     * Column number in the source code, 1-based indexed. 
+     * Is `-1` if the the column could not be mapped back to 
+     * the source. 
+     */
+    column: number,
+    /**
+     * URI of the source file.
+     */
+    source: string,
+    /**
+     * Original name of the identifier defined at the line-column offset.
+     * Usually left blank.
+     */
+    name?: string;
+} {
 
     const l = source.mappings[line - 1];
-    //console.log(line, l);
+
     if (!l)
         return {
-            line: 0,
-            column: 0,
+            line: -1,
+            column: -1,
             source: "",
             name: ""
         };
@@ -223,8 +253,8 @@ export function getSourceLineColumn(line: number, column: number, source: Source
     }
 
     return {
-        line: seg.original_line,
-        column: Math.max(seg.original_column, 0),
+        line: seg.original_line + 1,
+        column: Math.max(seg.original_column + 1, 1),
         source: seg.source > -1 ? source.sources[seg.source] : "",
         name: seg.original_name > -1 ? source.names[seg.original_name] : ""
     };
