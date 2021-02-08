@@ -1,5 +1,5 @@
 import { Yielder } from "../yielders/yielder.js";
-import { getChildContainerLength, getChildContainer } from "./child_container_functions.js";
+import { getChildContainerLength, getChildContainer, getChildAtIndex } from "./child_container_functions.js";
 import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./core_traverser_class.js";
 import { MetaRoot } from "./traverse.js";
@@ -35,11 +35,15 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
             if (!this.yielder) this.yielder = new Yielder<TraversedNode<T>, K>();
 
             if (node) {
-
+                this.node_stack[0] = this.node;
+                this.val_length_stack[0] = getChildContainerLength(this.node, this.key) << 16;
+                this.val_length_stack[1] = 0;
+                this.sp = 0;
                 if (!this.yield_on_exit_only || getChildContainerLength(node, key) == 0) {
 
                     //@ts-ignore dd
                     const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
+
 
                     meta.parent = null;
 

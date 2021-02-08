@@ -4,13 +4,13 @@ import { bitFilterYielder, bit_filter } from "../yielders/bit_filter.js";
 import { extract } from "../yielders/extract_root_node.js";
 import { filter, FilterYielder } from "../yielders/filter.js";
 import { FilterFunction, FilterFunctionYielder, filterWithFunction } from "../yielders/filterFunction.js";
-import { make_mutable, MutableYielder, mutate } from "../yielders/mutable.js";
 import { impersonate as impersonate } from "../yielders/impersonate.js";
-import { make_replaceable, replace, ReplaceFunction, ReplaceableYielder, ReplaceTreeFunction } from "../yielders/replaceable.js";
+import { make_mutable, MutableYielder, mutate } from "../yielders/mutable.js";
+import { make_replaceable, replace, ReplaceableYielder, ReplaceFunction, ReplaceTreeFunction } from "../yielders/replaceable.js";
 import { make_skippable, SkippableYielder } from "../yielders/skippable.js";
 import { skip_root } from "../yielders/skip_root.js";
 import { Yielder } from "../yielders/yielder.js";
-import { getChildAtIndex, getChildContainer, getChildContainerLength } from "./child_container_functions.js";
+import { getChildAtIndex, getChildContainerLength } from "./child_container_functions.js";
 import { MetaRoot } from "./traverse.js";
 export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> {
     protected readonly key: K;
@@ -38,14 +38,11 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
         this.meta.depth = 0;
         this.sp = 0;
         this.BEGINNING = true;
-        this.node_stack[1] = this.node;
-        this.val_length_stack[1] = getChildContainerLength(this.node, this.key) << 16;
-        this.val_length_stack[1] = 0;
         return this;
     }
     next(): {
         done?: boolean;
-        value: TraverserOutput<T, B>;
+        value: TraverserOutput<T, K, B>;
     } {
         const { BEGINNING, node, max_depth, node_stack, val_length_stack, key, yielder, meta } = this;
 
@@ -64,6 +61,8 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                 //@ts-ignore
                 node_stack[1] = node;
                 val_length_stack[0] = 1 << 16;
+                this.node_stack[1] = this.node;
+                this.val_length_stack[1] = 0;
 
                 //const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
                 //meta.parent = null;
