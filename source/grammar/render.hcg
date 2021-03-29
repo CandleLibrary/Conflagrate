@@ -1,0 +1,79 @@
+@IGNORE g:ws g:nl
+
+<> render >  
+rules
+f:r { 
+    (rules => (state)=> rules.map(r=>r(state)).join("")  )($$sym1 || [])
+}
+
+<> rules > (rule)(+)
+
+<> rule > 
+    member_select 
+    | member_spread
+    | literal
+    | mandatory_space
+    | optional_space
+    | optional_newline
+    | mandatory_newline
+    | optional_flagged
+    | indent_start
+    | indent_end
+
+<> delimiter_sequence > (delimiter_items)(+)
+
+<> delimiter_items > 
+    optional_space
+    | optional_space
+    | mandatory_space
+    | optional_newline
+    | mandatory_newline
+    | literal
+
+<> optional_flagged > 
+\{ g:id \: rules \}
+ f:r { 
+    (({emptyProp}, flag, rules) => 
+        (state)=> !emptyProp(state, flag)  ? rules.map(r=>r(state)).join("") : "" )(env, $$sym2, $$sym4)
+ }
+
+<> member_select > 
+\@ g:id ( \[ g:num \] f:r{$sym2} )? (\? )?
+f:r { 
+    (({propertyToString}, prop, index, optional)=>
+        (state)=>propertyToString(state, prop, index,optional))(env, $sym2, parseInt( $$sym3 || "0" ), !!$$sym4) 
+}
+
+<> member_spread > 
+\@ g:id \... ( \[ delimiter_sequence \] f:r{$sym2} )?
+f:r {
+    (({propertyToString}, prop, index, delimiter)=>
+        (state)=>propertyToString(state, prop, index, true, delimiter))(env, $sym2, Infinity, $$sym4 || undefined) 
+}
+
+<> literal > 
+literal_token
+f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$sym1) }
+
+| \\ (g:id | g:num | g:sym) 
+f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$sym2) }
+
+<> literal_token >( (RST g:ws) g:id (RST g:ws) | (RST g:ws) g:num (RST g:ws) | (RST g:ws) g:sym (RST g:ws) )(+)
+
+<> mandatory_space > \m:s
+f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
+
+<> optional_space > \o:s
+f:r { (({addSpace})=>(state) => addSpace(state, true))(env) }
+
+<> mandatory_newline > \o:n
+f:r { (({addNewLine})=>(state) => addNewLine(state, false))(env) }
+
+<> optional_newline > \o:n
+f:r { (({addNewLine})=>(state) => addNewLine(state, true))(env) }
+
+<> indent_start > \i:s
+f:r { (({increaseIndent})=>(state) => increaseIndent(state, true))(env) }
+
+<> indent_end > \i:e
+f:r { (({decreaseIndent})=>(state) => decreaseIndent(state, true))(env) }

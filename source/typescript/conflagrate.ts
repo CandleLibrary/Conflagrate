@@ -20,6 +20,8 @@ import { add_parent } from "./yielders/add_parent.js";
 
 import { bit_filter } from "./yielders/bit_filter.js";
 
+import { constructRenderers as experimentalConstructRenderers, render as experimentalRender } from "./render/render_experimental.js";
+
 export * from "./traversers/node_handler.js";
 
 import {
@@ -83,6 +85,8 @@ export {
     renderWithSourceMap,
     renderWithFormattingAndSourceMap,
     NodeRenderer,
+    experimentalConstructRenderers,
+    experimentalRender,
 
     //Types
     TraverseState
