@@ -35,6 +35,11 @@ export interface RendererState<Node, TypeName extends keyof Node> {
      * An array of source map objects for the output text
      */
     map: Array<number[]>,
+    /**
+     * An optional user supplied state object that can be used
+     * of lookup tables, activation frames, etc.
+     */
+    custom?: any;
 }
 
 export interface renderFunction<Node, TypeName extends keyof Node> {
