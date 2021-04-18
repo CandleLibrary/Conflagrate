@@ -14,8 +14,8 @@
         "test.watch": "cfw.test -w ./test/**"
     },
     "dependencies": {
-        "@candlefw/url": "*",
-        "@candlefw/wind": "*"
+        "@candlefw/url": "0.1.5",
+        "@candlefw/wind": "0.4.3"
     },
     "devDependencies": {
         "@candlelib/cure": "*"
