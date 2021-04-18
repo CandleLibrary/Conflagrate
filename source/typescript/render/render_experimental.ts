@@ -60,7 +60,7 @@ function propertyToString<Node, TypeName extends keyof Node>(
 
     const node = state.node;
 
-    if (!property) {
+    if (property === null || property === undefined) {
         if (IS_OPTIONAL || index == Infinity)
             return "";
         else
@@ -153,7 +153,8 @@ export function render<Node, TypeName extends keyof Node>(
         map: [],
         mappings,
         renderers,
-        node
+        node,
+        custom: {}
     };
 
     return renderFunction(state, node);
