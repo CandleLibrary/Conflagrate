@@ -1,4 +1,4 @@
-import { ParserFactory } from "@candlefw/hydrocarbon";
+import { ParserFactory } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 const data = (() => {
 
@@ -1637,4 +1637,4 @@ const fns = [(e, sym) => sym[sym.length - 1],
 
 const parser_factory = ParserFactory(fns, undefined, data);
 
-export { fns as parser_functions, data as parser_data, parser_factory }; 
+export { fns as parser_functions, data as parser_data, parser_factory };
