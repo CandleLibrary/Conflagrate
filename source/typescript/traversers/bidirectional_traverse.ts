@@ -1,5 +1,5 @@
 import { Yielder } from "../yielders/yielder.js";
-import { getChildContainerLength, getChildContainer, getChildAtIndex } from "./child_container_functions.js";
+import { getChildContainerLength, getChildAtIndex } from "./child_container_functions.js";
 import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./core_traverser_class.js";
 import { MetaRoot } from "./traverse.js";
@@ -23,7 +23,7 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
     next() {
         const { BEGINNING, node, max_depth, node_stack, val_length_stack, key, yielder, meta } = this;
 
-        // Prevent infinite loop from a cyclical graph;
+        // Prevent infinite loop from a cyclic graph;
         if (this.sp > 100000)
             throw new (class CyclicalError extends Error {
             })("Max node tree depth reached. The tree may actually be a cyclical graph.");
@@ -139,8 +139,8 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
  * twice. Yield modifiers can be used to perform both non-destructive and destructive edits on the AST.
  * 
  * Meta object contains an extra property, `traverse_state`, which is an integer with three states:
- * - `0` : The traverser is entering an interior.
- * - `1` : The traverser is exiting an interior.
+ * - `0` : The traverser is entering an interior node.
+ * - `1` : The traverser is exiting an interior node.
  * - `2` : The traverser is yielding a leaf node. 
  * 
  * @param node - The root node of the AST tree.

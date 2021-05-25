@@ -26,12 +26,15 @@ export class MutableYielder<T, K extends keyof T> extends ReplaceableYielder<T, 
         parent = this.replace_tree_function(parent, node, index, children, () => false);
 
         if (new_child_children_length < limit)
-            val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
+            val_length_stack[sp] |= (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
 
 
         if (node == null) {
+
             val_length_stack[sp - 1] -= ((1 << 16) + 1);
+
             children.splice(index, 1);
+
             node_stack[sp] = children[index - 1];
         } else {
             children[index] = node;
