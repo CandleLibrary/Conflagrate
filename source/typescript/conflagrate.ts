@@ -1,4 +1,4 @@
-import { addModuleToCFW } from "@candlefw/cfw";
+import { addModuleToCFW } from "@candlelib/candle";
 
 import { filter } from "./yielders/filter.js";
 

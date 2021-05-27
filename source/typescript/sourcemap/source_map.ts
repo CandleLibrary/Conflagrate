@@ -3,7 +3,7 @@
  * 
  */
 
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 import { Line, Segment, SourceMap } from "../types/source_map.js";
 import { decodeVLQBase64Array, encodeVLQBase64 } from "./vlq_base64.js";
 

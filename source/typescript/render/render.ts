@@ -1,6 +1,6 @@
 import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./source_map_functions.js";
 
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 
 const node_id_bit_offset = 23;
 

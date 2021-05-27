@@ -1,4 +1,4 @@
-import { ParserFactory } from "@candlefw/hydrocarbon/build/library/runtime.js";
+import { ParserFactory } from "@candlelib/hydrocarbon/build/library/runtime.js";
 
 const data = (() => {
 

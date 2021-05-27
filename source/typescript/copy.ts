@@ -1,4 +1,4 @@
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 /**
  * Copies compatible node tree.
  * @param node - Any node in an acyclic AST tree compatible with cfw.conflagrate
