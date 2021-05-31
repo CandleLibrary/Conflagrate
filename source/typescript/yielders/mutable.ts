@@ -11,36 +11,60 @@ export class MutableYielder<T, K extends keyof T> extends ReplaceableYielder<T, 
         this.node_stack = node_stack;
         this.val_length_stack = val_length_stack;
     }
-    mutate(replacement_node: T) { this.replace(replacement_node); }
-    protected replaceNodes(node_stack, sp, val_length_stack, node, key) {
+    mutate(replacement_node: T, PROCESS_NEW_NODE: boolean = false) { this.replace(replacement_node, PROCESS_NEW_NODE); }
+
+
+    protected replaceNodes(
+        node_stack: T[],
+        sp: number,
+        val_length_stack: number[],
+        replacement: T | T[],
+        key: K,
+        PROCESS_NEW_NODE: boolean = false
+    ) {
 
         let
             parent = node_stack[sp - 1];
 
         const
+            REPLACEMENT_IS_ARRAY = Array.isArray(replacement),
+            REPLACEMENT_IS_NULL = null === replacement,
             len = val_length_stack[sp - 1],
             limit = len & 0xFFFF0000 >>> 16,
             index = (len & 0xFFFF) - 1,
-            new_child_children_length = getChildContainerLength(node, key),
+            new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
             children: T[] = <T[]><unknown>parent[key];
-        parent = this.replace_tree_function(parent, node, index, children, () => false);
+
+        parent = this.replace_tree_function(parent, replacement, index, children, () => false);
 
         if (new_child_children_length < limit)
             val_length_stack[sp] |= (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
 
 
-        if (node == null) {
+        if (replacement == null) {
 
-            val_length_stack[sp - 1] -= ((1 << 16) + 1);
+            val_length_stack[sp - 1] -= (1 << 16);
 
             children.splice(index, 1);
 
             node_stack[sp] = children[index - 1];
         } else {
-            children[index] = node;
-            node_stack[sp] = node;
-
+            if (REPLACEMENT_IS_ARRAY) {
+                //@ts-ignore
+                val_length_stack[sp - 1] += ((replacement.length - 1) << 16);
+                //@ts-ignore
+                children.splice(index, 1, ...replacement);
+                node_stack[sp] = replacement[0];
+            } else {
+                //@ts-ignore 
+                children[index] = replacement;
+                //@ts-ignore 
+                node_stack[sp] = replacement;
+            }
         }
+
+        if (REPLACEMENT_IS_NULL || PROCESS_NEW_NODE)
+            val_length_stack[sp - 1] -= 1;
 
         this.stack_pointer--;
     }
@@ -64,7 +88,7 @@ export class MutateYielder<T, K extends keyof T, B> extends MutableYielder<T, K>
         if (new_node == null || new_node && new_node !== node) {
 
 
-            this.replace(new_node);
+            this.replace(new_node, false);
             if (new_node == null) {
                 return null;
             };

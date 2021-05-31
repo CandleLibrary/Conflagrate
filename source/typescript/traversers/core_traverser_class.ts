@@ -59,46 +59,43 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
 
             if (node) {
                 //@ts-ignore
-                node_stack[1] = node;
-                val_length_stack[0] = 1 << 16;
-                this.node_stack[1] = this.node;
+                this.node_stack[0] = this.node;
+                this.val_length_stack[0] = getChildContainerLength(this.node, this.key) << 16;
                 this.val_length_stack[1] = 0;
+                this.sp = 0;
 
-                //const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
-                //meta.parent = null;
-                //if (y) return { value: { node: y, meta }, done: false };
-            }
-            else {
+                meta.parent = null;
 
+                const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
+
+                if (y) return { value: { node: y, meta }, done: false };
+            } else
                 return { value: null, done: true };
-            }
         }
 
         while (this.sp >= 0) {
 
-            meta.parent = node_stack[this.sp];
-
             const len = this.val_length_stack[this.sp], limit = (len & 0xFFFF0000) >> 16, index = (len & 0xFFFF);
 
-            if (this.sp < max_depth + 1 && index < limit) {
+            if (this.sp < max_depth && index < limit) {
 
-                const child: T = this.sp == 0 ? node_stack[1] : getChildAtIndex(node_stack[this.sp], key, index);
-                //const children: T[] = getChildContainer(node_stack[this.sp], key, []), child = children[index];
+                meta.parent = node_stack[this.sp];
+
+                const child = getChildAtIndex(node_stack[this.sp], key, index);
 
                 val_length_stack[this.sp]++;
 
                 this.sp++;
 
+                node_stack[this.sp] = child;
 
-                val_length_stack[this.sp] = getChildContainerLength(child, key) << 16;
+                const child_length = getChildContainerLength(child, key);
+
+                val_length_stack[this.sp] = child_length << 16;
 
                 if (child) {
-
-                    node_stack[this.sp] = child;
-                    //meta.prev = children[index + 1];
-                    //meta.next = children[index - 1];
-                    meta.prev = getChildAtIndex(node_stack[this.sp], key, index + 1);
-                    meta.next = getChildAtIndex(node_stack[this.sp], key, index - 1);
+                    meta.prev = getChildAtIndex(node_stack[this.sp - 1], key, index - 1);
+                    meta.next = getChildAtIndex(node_stack[this.sp - 1], key, index + 1);
                     meta.index = index;
                     meta.depth = this.sp;
 
@@ -113,7 +110,7 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
         }
 
         //@ts-ignore
-        this.yielder.complete(node_stack[1], this.sp, node_stack, val_length_stack, meta);
+        this.yielder.complete(node_stack[0], this.sp, node_stack, val_length_stack, meta);
 
         return { value: null, done: true };
     }
@@ -169,10 +166,10 @@ export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> 
                     continue;
                 if (!RETURN_ROOT) output.push(val);
             }
-            return RETURN_ROOT ? this.node_stack[1] : output;
+            return RETURN_ROOT ? this.node_stack[0] : output;
         } else {
             for (const { } of this);
-            return this.node_stack[1];
+            return this.node_stack[0];
         }
     }
 
