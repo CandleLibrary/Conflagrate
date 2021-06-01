@@ -41,6 +41,10 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                 this.sp = 0;
                 if (!this.yield_on_exit_only || getChildContainerLength(node, key) == 0) {
 
+                    if (getChildContainerLength(node, key) == 0)
+                        meta.traverse_state = TraverseState.LEAF;
+                    else
+                        meta.traverse_state = TraverseState.ENTER;
                     //@ts-ignore dd
                     const y = this.yielder.yield(node, this.sp, node_stack, val_length_stack, meta);
 
@@ -50,10 +54,9 @@ class bidirectionalTraverser<T, K extends keyof T, B> extends Traverser<T, K, B 
                     if (y)
                         return { value: { node: y, meta }, done: false };
                 }
-            } else {
+            } else
 
                 return { value: null, done: true };
-            }
         }
 
         while (this.sp >= 0) {
