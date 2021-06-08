@@ -1,7 +1,7 @@
 import { Lexer } from "@candlelib/wind";
 /**
  * Copies compatible node tree.
- * @param node - Any node in an acyclic AST tree compatible with cfw.conflagrate
+ * @param node - Any node in an acyclic AST tree compatible with conflagrate
  * @returns A deep copy of the node.
  */
 export function copy<T>(node: T): T {

@@ -1,5 +1,3 @@
-import { addModuleToCFW } from "@candlelib/candle";
-
 import { filter } from "./yielders/filter.js";
 
 import { make_replaceable, replace, ReplaceFunction } from "./yielders/replaceable.js";
@@ -91,41 +89,3 @@ export {
     //Types
     TraverseState
 };
-
-addModuleToCFW({
-    copy,
-
-    // Source Map
-    createSourceMapJSON,
-    decodeJSONSourceMap,
-    getSourceLineColumn,
-    createSourceMap,
-    getPositionLexerFromJSONSourceMap,
-
-    //Traversal
-    skip_root,
-    traverse,
-    bidirectionalTraverse,
-    breadthTraverse,
-    extract,
-    filter,
-    make_replaceable,
-    make_skippable,
-    impersonate,
-    replace,
-    add_parent,
-    bit_filter,
-
-    //Rendering
-    buildRenderers,
-    buildFormatRules,
-    renderCompressed,
-    renderWithFormatting,
-    renderWithSourceMap,
-
-
-    //Types
-    TraverseState
-}, "conflagrate");
-
-
