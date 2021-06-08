@@ -9,4 +9,4 @@ import { constructRenderers, render } from "../build/library/render/render_exper
 
 const node2 = (sk`fn tickle:u32(){loop (true) return : loop () 2; 0}`);
 
-assert(inspect, node2 == "");
+assert(node2 == "");
