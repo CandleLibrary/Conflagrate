@@ -1,17 +1,17 @@
 {
     "name": "@candlelib/conflagrate",
-    "version": "0.1.1",
+    "version": "0.2.1",
     "description": "Node Tree Traversal Library",
     "main": "./build/library/conflagrate.js",
     "types": "./build/types/conflagrate.d.ts",
     "type": "module",
-    "repository": "https://github.com/candlefw/conflagrate",
+    "repository": "https://github.com/CandleLibrary/conflagrate",
     "author": "Anthony C Weathersby",
     "license": "MIT",
     "scripts": {
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
-        "test": "cfw.test ./test/",
-        "test.watch": "cfw.test -w ./test/**"
+        "test": "candle.cure ./test/",
+        "test.watch": "candle.cure -w ./test/**"
     },
     "dependencies": {
         "@candlelib/url": "0.1.5",

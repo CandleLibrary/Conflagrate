@@ -2,24 +2,24 @@
 # yarn lockfile v1
 
 
-"@candlefw/cfw@latest":
+"@candlelib/candle@latest":
   version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@candlefw/cfw/-/cfw-1.0.1.tgz#218f5f749b184e3e85f27cb7ef956d5102113c33"
+  resolved "https://registry.yarnpkg.com/@candlelib/candle/-/cfw-1.0.1.tgz#218f5f749b184e3e85f27cb7ef956d5102113c33"
   integrity sha512-QEXevej8BFOQ3CyYM49qccZp1iLJm+Wg0XEt6zyQiOwzD/1ThUFyviJrjMAsklc9mmLB8/uXO0N1NYEPzlK6NA==
 
-"@candlefw/test@>=0.1.0":
+"@candlelib/test@>=0.1.0":
   version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@candlefw/test/-/test-0.0.1.tgz#d99f09ec9c4e4667c887fabad9db4eeaeef92c75"
+  resolved "https://registry.yarnpkg.com/@candlelib/test/-/test-0.0.1.tgz#d99f09ec9c4e4667c887fabad9db4eeaeef92c75"
   integrity sha512-5vHGMelk48AF6rYQ7TVxkfj3AcpjG2Kd6GgZy9fSzfnLLOCuJOgJr+3bgLfDM/PXDP4U/YWJIeRmf74Ra17hjg==
 
-"@candlefw/url@>=0.1.3":
+"@candlelib/url@>=0.1.3":
   version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@candlefw/url/-/url-0.1.3.tgz#69cca971bfa09a9f7cf114bee6881a7424f3e157"
+  resolved "https://registry.yarnpkg.com/@candlelib/url/-/url-0.1.3.tgz#69cca971bfa09a9f7cf114bee6881a7424f3e157"
   integrity sha512-jL4yD7Han4YQ2sOFfxGgq8rj+gsrwlQvAr3U11DbnfJGPjCA6CIhwNWiHCnFxjGgSjS5tCJl+tGI4UiyAeoycQ==
   dependencies:
-    "@candlefw/cfw" latest
+    "@candlelib/candle" latest
 
-"@candlefw/wind@^0.4.2":
+"@candlelib/wind@^0.4.2":
   version "0.4.2"
-  resolved "https://registry.yarnpkg.com/@candlefw/wind/-/wind-0.4.2.tgz#6973d750cea2c5fe1e2fb25a934a16d85a364031"
+  resolved "https://registry.yarnpkg.com/@candlelib/wind/-/wind-0.4.2.tgz#6973d750cea2c5fe1e2fb25a934a16d85a364031"
   integrity sha512-wm76SR+dgIhpRpL4urVKiGtJcfyvblHcJ236RDxDBToNU+MgwbH8yfW675LPAFauVufuMzGVzjwRIX3OQ0gdrg==
