@@ -14,7 +14,7 @@
         "test.watch": "candle.cure -w ./test/**"
     },
     "dependencies": {
-        "@candlelib/url": "0.1.5",
+        "@candlelib/uri": "0.1.5",
         "@candlelib/wind": "0.4.3"
     },
     "devDependencies": {
