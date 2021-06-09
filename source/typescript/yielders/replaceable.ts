@@ -83,62 +83,60 @@ export class ReplaceableYielder<T, K extends keyof T> extends Yielder<T, K> {
             let
                 parent = node_stack[sp - 1];
 
-           // if (parent) {
+            const
+                REPLACEMENT_IS_ARRAY = Array.isArray(replacement),
+                REPLACEMENT_IS_NULL = null === replacement,
+                len = val_length_stack[sp - 1],
+                limit = len & 0xFFFF0000 >>> 16,
+                index = (len & 0xFFFF) - 1,
+                new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
+                children: T[] = (<T[]><unknown>parent[key]).slice();
 
-                const
-                    REPLACEMENT_IS_ARRAY = Array.isArray(replacement),
-                    REPLACEMENT_IS_NULL = null === replacement,
-                    len = val_length_stack[sp - 1],
-                    limit = len & 0xFFFF0000 >>> 16,
-                    index = (len & 0xFFFF) - 1,
-                    new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
-                    children: T[] = (<T[]><unknown>parent[key]).slice();
+            let REPLACE_PARENT = false;
 
-                let REPLACE_PARENT = false;
+            parent = this.replace_tree_function(parent, replacement, index, children, () => REPLACE_PARENT = true);
 
-                parent = this.replace_tree_function(parent, replacement, index, children, () => REPLACE_PARENT = true);
+            if (parent && !REPLACE_PARENT) {
 
-                if (parent && !REPLACE_PARENT) {
+                //If the parent is replaced then the stack pointer should be
+                //reset to the parent's children nodes
 
-                    //If the parent is replaced then the stack pointer should be
-                    //reset to the parent's children nodes
+                if (new_child_children_length < limit)
+                    val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
 
-                    if (new_child_children_length < limit)
-                        val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
+                if (REPLACEMENT_IS_NULL) {
 
-                    if (REPLACEMENT_IS_NULL) {
+                    val_length_stack[sp - 1] -= (1 << 16);
 
-                        val_length_stack[sp - 1] -= (1 << 16);
+                    children.splice(index, 1);
 
-                        children.splice(index, 1);
-
-                        node_stack[sp] = children[index - 1];
+                    node_stack[sp] = children[index - 1];
+                } else {
+                    if (REPLACEMENT_IS_ARRAY) {
+                        //@ts-ignore
+                        val_length_stack[sp - 1] += ((replacement.length - 1) << 16);
+                        //@ts-ignore
+                        children.splice(index, 1, ...replacement);
+                        node_stack[sp] = replacement[0];
                     } else {
-                        if (REPLACEMENT_IS_ARRAY) {
-                            //@ts-ignore
-                            val_length_stack[sp - 1] += ((replacement.length - 1) << 16);
-                            //@ts-ignore
-                            children.splice(index, 1, ...replacement);
-                            node_stack[sp] = replacement[0];
-                        } else {
-                            //@ts-ignore 
-                            children[index] = replacement;
-                            //@ts-ignore 
-                            node_stack[sp] = replacement;
-                        }
+                        //@ts-ignore 
+                        children[index] = replacement;
+                        //@ts-ignore 
+                        node_stack[sp] = replacement;
                     }
-
-                    (<T[]><unknown>parent[key]) = children;
-
-                    if (REPLACEMENT_IS_NULL || PROCESS_NEW_NODE)
-                        val_length_stack[sp - 1] -= 1;
-
                 }
 
-                this.stack_pointer--;
+                (<T[]><unknown>parent[key]) = children;
 
-                this.replace(parent, false);
-           // }
+                if (REPLACEMENT_IS_NULL || PROCESS_NEW_NODE)
+                    val_length_stack[sp - 1] -= 1;
+
+            }
+
+            this.stack_pointer--;
+
+            this.replace(parent, REPLACE_PARENT && parent);
+
         } catch (e) {
             console.log(0, 1, this.stack_pointer, node_stack);
             console.log(e);
