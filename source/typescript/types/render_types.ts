@@ -40,6 +40,10 @@ export interface RendererState<Node, TypeName extends keyof Node> {
      * of lookup tables, activation frames, etc.
      */
     custom?: any;
+    /**
+     * True if the last character written is a space or newline character
+     */
+    PREVIOUS_SPACE: boolean;
 }
 
 export interface renderFunction<Node, TypeName extends keyof Node> {

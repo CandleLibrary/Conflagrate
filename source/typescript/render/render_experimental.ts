@@ -15,15 +15,23 @@ function getSourcePosition(state: RendererState<any, any>): { line: number, colu
 };
 
 function addLiteral(state: RendererState<any, any>, literal_string: string) {
+    state.PREVIOUS_SPACE = literal_string[literal_string.length - 1][0] == " ";
     return literal_string;
 }
 
 function addSpace(state, IS_OPTIONAL) {
+    if (state.PREVIOUS_SPACE)
+        return "";
+
+    state.PREVIOUS_SPACE = true;
+
     if (IS_OPTIONAL) return " ";
+
     return " ";
 }
 
 function addNewLine(state, IS_OPTIONAL) {
+    state.PREVIOUS_SPACE = true;
     return "\n" + (" ").repeat(state.indent * 4);
 }
 
@@ -60,32 +68,36 @@ function propertyToString<Node, TypeName extends keyof Node>(
 
     const node = state.node;
 
-    if (property === null || property === undefined) {
-        if (IS_OPTIONAL || index == Infinity)
-            return "";
-        else
-            throw new Error(`Property [${prop}] is not present on node ${state.node[state.mappings.type_lookup(node, "" + (node[state.mappings.typename]))]}`);
-    }
-
     let str = "";
 
-    if (typeof property == "object") {
+    if (property === null || property === undefined) {
+        if (IS_OPTIONAL || index == Infinity)
+            str = "";
+        else
+            throw new Error(`Property [${prop}] is not present on node ${state.node[state.mappings.type_lookup(node, "" + (node[state.mappings.typename]))]}`);
 
-        if (Array.isArray(property)) {
-
-            const delimiter_string: string = delimiter.map(d => d(state)).join("");
-
-            str = property.map(node => (state.node = node, renderFunction(state))).join(delimiter_string);
-
-        } else {
-
-            str = renderFunction(state, property);
-        }
     } else {
-        str = property.toString();
+
+        if (typeof property == "object") {
+
+            if (Array.isArray(property)) {
+
+                const delimiter_string: string = delimiter.map(d => d(state)).join("");
+
+                str = property.map(node => (state.node = node, renderFunction(state))).join(delimiter_string);
+
+            } else {
+
+                str = renderFunction(state, property);
+            }
+        } else {
+            str = property.toString();
+        }
+
+        state.node = node;
     }
 
-    state.node = node;
+    state.PREVIOUS_SPACE = (str[str.length - 1] == " ");
 
     return str;
 }
@@ -103,7 +115,10 @@ export function renderTemplateFunction<Node, TypeName extends keyof Node>(
     state: RendererState<Node, TypeName>,
     node: Node = null,
 ): string {
-    return renderFunction(state, node, true);
+    const str = renderFunction(state, node, true);
+    state.PREVIOUS_SPACE = (str[str.length - 1] == " ");
+    return str;
+
 }
 export function renderFunction<Node, TypeName extends keyof Node>(
     state: RendererState<Node, TypeName>,
@@ -150,6 +165,7 @@ export function render<Node, TypeName extends keyof Node>(
         column: 0,
         indent: 0,
         line: 0,
+        PREVIOUS_SPACE: false,
         map: [],
         mappings,
         renderers,
