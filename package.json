@@ -10,7 +10,7 @@
     "license": "MIT",
     "scripts": {
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
-        "test": "candle.cure ./test/**",
+        "test": "candle.cure ./test/",
         "test.watch": "candle.cure -w ./test/**"
     },
     "dependencies": {
