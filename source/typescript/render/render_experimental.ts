@@ -114,8 +114,9 @@ function getRenderer<Node, TypeName extends keyof Node>(
 export function renderTemplateFunction<Node, TypeName extends keyof Node>(
     state: RendererState<Node, TypeName>,
     node: Node = null,
+    FORCE_TEMPLATE = true
 ): string {
-    const str = renderFunction(state, node, true);
+    const str = renderFunction(state, node, FORCE_TEMPLATE);
     state.PREVIOUS_SPACE = (str[str.length - 1] == " ");
     return str;
 

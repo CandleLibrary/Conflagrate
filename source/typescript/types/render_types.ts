@@ -50,7 +50,7 @@ export interface renderFunction<Node, TypeName extends keyof Node> {
     (
         state: RendererState<Node, TypeName>,
 
-        node?: Node,
+        node?: any,
 
         FORCE_TEMPLATE?: boolean
 

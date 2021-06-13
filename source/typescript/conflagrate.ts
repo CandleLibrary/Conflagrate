@@ -20,6 +20,8 @@ import { bit_filter } from "./yielders/bit_filter.js";
 
 import { constructRenderers as experimentalConstructRenderers, render as experimentalRender } from "./render/render_experimental.js";
 
+import { NodeMapping, NodeMappings } from "./types/node_mappings";
+
 export * from "./traversers/node_handler.js";
 
 import {
@@ -87,5 +89,7 @@ export {
     experimentalRender,
 
     //Types
-    TraverseState
+    TraverseState,
+    NodeMapping,
+    NodeMappings
 };
