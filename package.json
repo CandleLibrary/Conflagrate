@@ -9,7 +9,7 @@
     "author": "Anthony C Weathersby",
     "license": "MIT",
     "scripts": {
-        "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
+        "prepublish": "rm -rf ./build && tsc & sleep 10",
         "test": "candle.cure ./test/",
         "test.watch": "candle.cure -w ./test/**"
     },
