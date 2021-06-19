@@ -13,6 +13,12 @@
         "test": "candle.cure ./test/",
         "test.watch": "candle.cure -w ./test/**"
     },
+    "files": [
+        "/build",
+        "/README.md",
+        "/CHANGELOG.md",
+        "/LICENSE"
+    ],
     "dependencies": {
         "@candlelib/uri": "0.2.3",
         "@candlelib/wind": "0.5.2"
