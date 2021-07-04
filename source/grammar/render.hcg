@@ -3,13 +3,12 @@
 <> render >  
 rules
 f:r { 
-    (rules => (state)=> rules.map(r=>r(state)).join("")  )($$sym1 || [])
+    (rules => (state)=> rules.map(r=>r(state)).join("")  )($$1 || [])
 }
 
 <> rules > (rule)(+)
 
-<> rule > 
-    member_select 
+<> rule > member_select 
     | member_spread
     | literal
     | mandatory_space
@@ -31,34 +30,36 @@ f:r {
     | literal
 
 <> optional_flagged > 
-\{ g:id \: rules \}
+\{ \not ? g:id ( \[ g:num \] f:r{ $2 } )? \: rules ( \or rules )? \}
  f:r { 
-    (({emptyProp}, flag, rules) => 
-        (state)=> !emptyProp(state, flag)  ? rules.map(r=>r(state)).join("") : "" )(env, $$sym2, $$sym4)
+    (({emptyProp}, flag, rules, alt_rules, index, NOT) => 
+        (state)=> (!emptyProp(state, flag, index)) && !NOT
+            ? rules.map(r=>r(state)).join("") 
+            : alt_rules.map(r=>r(state)).join("") 
+    )(env, $$3, $$6, $$7 || [], $4, !!$$2)
  }
 
 <> member_select > 
-\@ g:id ( \[ g:num \] f:r{$sym2} )? (\? )?
+\@ g:id ( \[ g:num \] f:r{$2} )? (\? )?
 f:r { 
     (({propertyToString}, prop, index, optional)=>
-        (state)=>propertyToString(state, prop, index,optional))(env, $sym2, parseInt( $$sym3 || "0" ), !!$$sym4) 
+        (state)=>propertyToString(state, prop, index,optional))(env, $2, parseInt( $$3 || "0" ), !!$$4) 
 }
 
 <> member_spread > 
-\@ g:id \... ( \[ delimiter_sequence \] f:r{$sym2} )?
+\@ g:id \... ( \[ ( g:num , f:r {$1}  )? delimiter_sequence \] f:r{ [$$2,$$3] } )?
 f:r {
     (({propertyToString}, prop, index, delimiter)=>
-        (state)=>propertyToString(state, prop, index, true, delimiter))(env, $sym2, Infinity, $$sym4 || undefined) 
+        (state)=>propertyToString(state, prop, index, true, delimiter))(env, $2, -$4[0] || Infinity, $4[1] || undefined) 
 }
 
-<> literal > 
-literal_token
-f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$sym1) }
+<> literal > tk:literal_token
+f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$1) }
 
-| \\ (g:id | g:num | g:sym) 
-f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$sym2) }
+| \\ (RST g:nl g:ws) ( (RST g:nl g:ws) g:id | (RST g:nl g:ws) g:num | (RST g:nl g:ws) g:sym | \\ ( g:id | g:num | g:sym ) )(+\" ) 
+f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$2) }
 
-<> literal_token >( (RST g:ws) g:id (RST g:ws) | (RST g:ws) g:num (RST g:ws) | (RST g:ws) g:sym (RST g:ws) )(+)
+<> literal_token >( (RST g:ws) g:id | (RST g:ws) g:num | (RST g:ws) g:sym )(+)
 
 <> mandatory_space > \m:s
 f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
@@ -66,7 +67,7 @@ f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
 <> optional_space > \o:s
 f:r { (({addSpace})=>(state) => addSpace(state, true))(env) }
 
-<> mandatory_newline > \o:n
+<> mandatory_newline > \m:n
 f:r { (({addNewLine})=>(state) => addNewLine(state, false))(env) }
 
 <> optional_newline > \o:n

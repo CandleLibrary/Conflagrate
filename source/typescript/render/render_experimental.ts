@@ -6,9 +6,9 @@
 
 import { NodeMappings } from "../types/node_mappings.js";
 import { NodeRenderer, RendererState } from "../types/render_types";
-import { parser_factory } from "./parser.js";
+import loader from "./parser.js";
 
-const { parser: render_compiler } = parser_factory;
+const render_compiler = await loader;
 
 function getSourcePosition(state: RendererState<any, any>): { line: number, column: number; } {
     return { line: 0, column: 0 };
@@ -20,8 +20,9 @@ function addLiteral(state: RendererState<any, any>, literal_string: string) {
 }
 
 function addSpace(state, IS_OPTIONAL) {
-    if (state.PREVIOUS_SPACE)
-        return "";
+
+    //if (state.PREVIOUS_SPACE)
+    //    return "";
 
     state.PREVIOUS_SPACE = true;
 
@@ -31,7 +32,12 @@ function addSpace(state, IS_OPTIONAL) {
 }
 
 function addNewLine(state, IS_OPTIONAL) {
+
+    if (IS_OPTIONAL)
+        return "";
+
     state.PREVIOUS_SPACE = true;
+
     return "\n" + (" ").repeat(state.indent * 4);
 }
 
@@ -43,13 +49,22 @@ function decreaseIndent(state, IS_OPTIONAL) {
     state.indent--;
 }
 
-function emptyProp(state, prop) {
+function emptyProp(state, prop, index) {
+
 
     const property = state.node[prop];
 
     if (!property) return true;
 
-    if (Array.isArray(property) && property.length == 0) return true;
+    if (Array.isArray(property)) {
+        index = index ? parseInt(index) : null;
+        if (typeof index == "number") {
+
+            if (!property[index]) return true;
+
+        } else if (property.length == 0)
+            return true;
+    }
 
     if ((property instanceof Map || property instanceof Set) && property.size == 0) return true;
 
@@ -82,12 +97,18 @@ function propertyToString<Node, TypeName extends keyof Node>(
 
             if (Array.isArray(property)) {
 
-                const delimiter_string: string = delimiter.map(d => d(state)).join("");
+                if (index < 0 || index == Infinity) {
+                    const delimiter_string: string = delimiter.map(d => d(state)).join("");
 
-                str = property.map(node => (state.node = node, renderFunction(state))).join(delimiter_string);
+                    const start = index < 0 ? -index : 0;
+
+                    str = property.slice(start).map(node => (state.node = node, renderFunction(state))).join(delimiter_string);
+                } else {
+                    state.node = property[index];
+                    str = renderFunction(state, property[index]);
+                }
 
             } else {
-
                 str = renderFunction(state, property);
             }
         } else {
@@ -133,9 +154,11 @@ export function renderFunction<Node, TypeName extends keyof Node>(
 
     state.node = node;
 
-    if (typeof node == "string") {
+    if (typeof node == "string")
         return node;
-    } else {
+    else if (!node)
+        return "";
+    else {
 
         const renderer = getRenderer(node, mappings, renderers);
 
