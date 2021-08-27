@@ -1,4 +1,4 @@
-@IGNORE g:ws g:nl
+@IGNORE g:sp g:nl
 
 <> render >  
 rules
@@ -56,10 +56,10 @@ f:r {
 <> literal > tk:literal_token
 f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$1) }
 
-| \\ (RST g:nl g:ws) ( (RST g:nl g:ws) g:id | (RST g:nl g:ws) g:num | (RST g:nl g:ws) g:sym | \\ ( g:id | g:num | g:sym ) )(+\" ) 
+| \\ (RST g:nl g:sp) ( (RST g:nl g:sp) g:id | (RST g:nl g:sp) g:num | (RST g:nl g:sp) g:sym | \\ ( g:id | g:num | g:sym ) )(+\" ) 
 f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$2) }
 
-<> literal_token >( (RST g:ws) g:id | (RST g:ws) g:num | (RST g:ws) g:sym )(+)
+<> literal_token >( (RST g:sp) g:id | (RST g:sp) g:num | (RST g:sp) g:sym )(+)
 
 <> mandatory_space > \m:s
 f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
