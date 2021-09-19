@@ -2,7 +2,7 @@ import { Yielder } from "../yielders/yielder.js";
 import { getChildContainerLength, getChildAtIndex } from "./child_container_functions.js";
 import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./core_traverser_class.js";
-import { MetaRoot } from "./traverse.js";
+import { MetaRoot } from "../types/meta_root";
 
 export enum TraverseState {
     ENTER,

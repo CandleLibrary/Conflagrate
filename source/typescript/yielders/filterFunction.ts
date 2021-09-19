@@ -1,4 +1,4 @@
-import { MetaRoot } from "../traversers/traverse.js";
+import { MetaRoot } from "../types/meta_root";
 import { Yielder } from "./yielder.js";
 
 export type FilterFunction<T, K, R extends T, B> = (node: T, meta: B & MetaRoot<T, K>) => node is R;

@@ -4,7 +4,7 @@
  * disclaimer notice.
  */
 
-import { FormatRule } from "./FormatRule";
+import { FormatRule } from "../render/render";
 
 import { custom_render_function } from "./render_types";
 
@@ -63,8 +63,6 @@ export interface NodeMapping<
      */
     custom_render?: custom_render_function<Node, keyof Node>;
 }
-
-const map = cm<AST, AST, "type">("ADD", ["type"]);
 
 export interface NodeMappings<
     Root,

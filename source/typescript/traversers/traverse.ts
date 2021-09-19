@@ -1,13 +1,5 @@
 import { Traverser } from "./core_traverser_class.js";
-
-export interface MetaRoot<T, K> {
-    key: K;
-    index: number,
-    parent: T,
-    prev: T,
-    next: T,
-    depth: number;
-}
+import { MetaRoot } from '../types/meta_root';
 
 /**
  * This traverses a tree and yields nodes depth first. Uses Yielders 

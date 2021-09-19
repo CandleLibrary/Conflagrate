@@ -1,5 +1,5 @@
 import { getChildContainerLength } from "../traversers/child_container_functions.js";
-import { MetaRoot } from "../traversers/traverse.js";
+import { MetaRoot } from "../types/meta_root";
 import { ReplaceableYielder, ReplaceFunction, ReplaceTreeFunction } from "./replaceable.js";
 
 export type MutateFunction<T, K extends keyof T, B> = (node: T, meta?: MetaRoot<T, K> & B) => T;

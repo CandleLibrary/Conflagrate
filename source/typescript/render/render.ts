@@ -1,10 +1,10 @@
-import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./source_map_functions.js";
-
 import { Lexer } from "@candlelib/wind";
+
+import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./source_map_functions.js";
 
 const node_id_bit_offset = 23;
 
-export const enum FormatRule {
+export enum FormatRule {
     MIN_LIST_ELE_LIMIT_SHIFT = 0,
 
     MIN_LIST_ELE_LIMIT = 1 << MIN_LIST_ELE_LIMIT_SHIFT,

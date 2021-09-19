@@ -11,7 +11,7 @@ import { make_skippable, SkippableYielder } from "../yielders/skippable.js";
 import { skip_root } from "../yielders/skip_root.js";
 import { Yielder } from "../yielders/yielder.js";
 import { getChildAtIndex, getChildContainerLength } from "./child_container_functions.js";
-import { MetaRoot } from "./traverse.js";
+import { MetaRoot } from "../types/meta_root";
 export class Traverser<T, K extends keyof T, B> implements ASTIterator<T, K, B> {
     protected readonly key: K;
     protected readonly node: T;

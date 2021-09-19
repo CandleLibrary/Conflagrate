@@ -1,5 +1,5 @@
 import { getChildContainerLength } from "../traversers/child_container_functions.js";
-import { MetaRoot } from "../traversers/traverse.js";
+import { MetaRoot } from "../types/meta_root";
 import { Yielder } from "./yielder.js";
 
 /**

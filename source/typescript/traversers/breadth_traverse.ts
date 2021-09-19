@@ -2,7 +2,7 @@ import { Yielder } from "../yielders/yielder.js";
 import { getChildContainerLength, getChildContainer } from "./child_container_functions.js";
 import { TraversedNode } from "../types/traversed_node.js";
 import { Traverser } from "./core_traverser_class.js";
-import { MetaRoot } from "./traverse.js";
+import { MetaRoot } from "../types/meta_root";
 
 
 class breadthTraverser<T, K extends keyof T, B> extends Traverser<T, K, B> {
