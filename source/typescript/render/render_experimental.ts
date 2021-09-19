@@ -33,7 +33,7 @@ function addSpace(state, IS_OPTIONAL) {
 
 function addNewLine(state, IS_OPTIONAL) {
 
-    if (IS_OPTIONAL)
+    if (IS_OPTIONAL && false)
         return "";
 
     state.PREVIOUS_SPACE = true;
@@ -89,7 +89,7 @@ function propertyToString<Node, TypeName extends keyof Node>(
         if (IS_OPTIONAL || index == Infinity)
             str = "";
         else
-            throw new Error(`Property [${prop}] is not present on node ${state.node[state.mappings.type_lookup(node, "" + (node[state.mappings.typename]))]}`);
+            throw new Error(`Property [${prop}] is not present on node [${node[state.mappings.typename]}]`);
 
     } else {
 
@@ -154,8 +154,8 @@ export function renderFunction<Node, TypeName extends keyof Node>(
 
     state.node = node;
 
-    if (typeof node == "string")
-        return node;
+    if (["string", "number", "boolean", "null", "undefined", "bigint"].includes(typeof node))
+        return node + "";
     else if (!node)
         return "";
     else {
@@ -230,7 +230,6 @@ export function constructRenderers<Node, TypeName extends keyof Node>(mappings: 
                     template_function: default_template
                 });
             } else {
-
 
                 renderers[index] = ({
                     type,
