@@ -6,9 +6,11 @@
 
 import { NodeMappings } from "../types/node_mappings.js";
 import { NodeRenderer, RendererState } from "../types/render_types";
-import loader from "./parser.js";
+//import loader from "./parser.js";
+//const render_compiler = await loader;
 
-const render_compiler = await loader;
+import framework from "./parser_new.js";
+const { parse: render_compiler } = await framework;
 
 function getSourcePosition(state: RendererState<any, any>): { line: number, column: number; } {
     return { line: 0, column: 0 };
@@ -240,16 +242,23 @@ export function constructRenderers<Node, TypeName extends keyof Node>(mappings: 
 
         } else {
 
-            const renderer = render_compiler(template, env).result[0];
+            const { result, err } = render_compiler(template + "  ", env);
 
-            if (custom_render) {
-                renderers[index] = ({
-                    type,
-                    render: custom_render,
-                    template_function: renderer
-                });
+            if (err) {
+                console.log(mappings.typename, { template });
+                throw err;
             } else {
-                renderers[index] = ({ type, render: renderer, template_function: renderer });
+                const [renderer] = result;
+
+                if (custom_render) {
+                    renderers[index] = ({
+                        type,
+                        render: custom_render,
+                        template_function: renderer
+                    });
+                } else {
+                    renderers[index] = ({ type, render: renderer, template_function: renderer });
+                }
             }
         }
     }

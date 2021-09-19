@@ -11,7 +11,8 @@
     "scripts": {
         "prepublishOnly": "rm -rf ./build && tsc & sleep 10",
         "test": "candle.cure ./test/",
-        "test.watch": "candle.cure -w ./test/**"
+        "test.watch": "candle.cure -w ./test/**",
+        "compile": "hydrocarbon compile --type ts --output ./source/typescript/render/parser_new ./source/grammar/render.hcg"
     },
     "files": [
         "/build",
@@ -21,7 +22,8 @@
     ],
     "dependencies": {
         "@candlelib/uri": "0.2.4",
-        "@candlelib/wind": "0.5.3"
+        "@candlelib/wind": "0.5.3",
+        "@candlelib/hydrocarbon": "*"
     },
     "devDependencies": {
         "@candlelib/cure": "*"

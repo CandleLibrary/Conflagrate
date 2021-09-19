@@ -1,80 +1,114 @@
 @IGNORE g:sp g:nl
 
 <> render >  
-rules
-f:r { 
-    (rules => (state)=> rules.map(r=>r(state)).join("")  )($$1 || [])
-}
+    
+    rules
 
-<> rules > (rule)(+)
+    f:r { 
+        (rules => (state)=> rules.map(r=>r(state)).join("")  )($$1 || [])
+    }
 
-<> rule > member_select 
-    | member_spread
-    | literal
-    | mandatory_space
-    | optional_space
-    | optional_newline
-    | mandatory_newline
-    | optional_flagged
-    | indent_start
-    | indent_end
+<> rules > rule(+)
 
-<> delimiter_sequence > (delimiter_items)(+)
+<> rule > 
+        member_select 
+    |   member_spread
+    |   literal
+    |   mandatory_space
+    |   optional_space
+    |   optional_newline
+    |   mandatory_newline
+    |   optional_flagged
+    |   indent_start
+    |   indent_end
+
+<> delimiter_sequence > delimiter_items(+)
 
 <> delimiter_items > 
-    optional_space
-    | optional_space
-    | mandatory_space
-    | optional_newline
-    | mandatory_newline
-    | literal
+        optional_space
+    |   mandatory_space
+    |   optional_newline
+    |   mandatory_newline
+    |   literal
 
 <> optional_flagged > 
-\{ \not ? g:id ( \[ g:num \] f:r{ $2 } )? \: rules ( \or rules )? \}
- f:r { 
-    (({emptyProp}, flag, rules, alt_rules, index, NOT) => 
-        (state)=> (!emptyProp(state, flag, index)) && !NOT
-            ? rules.map(r=>r(state)).join("") 
-            : alt_rules.map(r=>r(state)).join("") 
-    )(env, $$3, $$6, $$7 || [], $4, !!$$2)
- }
+
+    \{ t:not? g:id ( \[ g:num \] f:r{ $2 } )? \: rules ( t:or rules )? \}
+
+    f:r { 
+       (({emptyProp}, flag, rules, alt_rules, index, NOT) => 
+           (state)=> (!emptyProp(state, flag, index)) && !NOT
+               ? rules.map(r=>r(state)).join("") 
+               : alt_rules.map(r=>r(state)).join("") 
+       )(env, $$3, $$6, $$7 || [], $4, !!$$2)
+    }
 
 <> member_select > 
-\@ g:id ( \[ g:num \] f:r{$2} )? (\? )?
-f:r { 
-    (({propertyToString}, prop, index, optional)=>
-        (state)=>propertyToString(state, prop, index,optional))(env, $2, parseInt( $$3 || "0" ), !!$$4) 
-}
+    
+    \@ g:id ( \[ g:num \] f:r{$2} )? (\? )?
+
+    f:r { 
+        (({propertyToString}, prop, index, optional)=>
+            (state)=>propertyToString(state, prop, index,optional))(env, $2, parseInt( $$3 || "0" ), !!$$4) 
+    }
 
 <> member_spread > 
-\@ g:id \... ( \[ ( g:num , f:r {$1}  )? delimiter_sequence \] f:r{ [$$2,$$3] } )?
-f:r {
-    (({propertyToString}, prop, index, delimiter)=>
-        (state)=>propertyToString(state, prop, index, true, delimiter))(env, $2, -$4[0] || Infinity, $4[1] || undefined) 
-}
+    
+    \@ g:id \... ( \[ ( g:num , f:r {$1}  )? delimiter_sequence \] f:r{ [$$2,$$3] } )?
 
-<> literal > tk:literal_token
-f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$1) }
+    f:r {
+        (({propertyToString}, prop, index, delimiter)=>
+            (state)=>propertyToString(state, prop, index, true, delimiter))(env, $2, -$4[0] || Infinity, $4[1] || undefined) 
+    }
 
-| \\ (RST g:nl g:sp) ( (RST g:nl g:sp) g:id | (RST g:nl g:sp) g:num | (RST g:nl g:sp) g:sym | \\ ( g:id | g:num | g:sym ) )(+\" ) 
-f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$2) }
+<> literal > 
 
-<> literal_token >( (RST g:sp) g:id | (RST g:sp) g:num | (RST g:sp) g:sym )(+)
+        literal_token
+    
+        f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$1) }
 
-<> mandatory_space > \m:s
-f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
+    |   \\ (RST g:nl g:sp) ( (RST g:nl g:sp) g:id | (RST g:nl g:sp) g:num | (RST g:nl g:sp) g:sym | \\ ( g:id | g:num | g:sym ) )(+\" ) 
+        
+        f:r { (({addLiteral}, _)=>(state)=>addLiteral(state,_) )(env,$2) }
 
-<> optional_space > \o:s
-f:r { (({addSpace})=>(state) => addSpace(state, true))(env) }
+<> literal_token >  ( 
+        
+        (RST g:sp) g:id | (RST g:sp) g:num | (RST g:sp) g:sym 
 
-<> mandatory_newline > \m:n
-f:r { (({addNewLine})=>(state) => addNewLine(state, false))(env) }
+    )(+\' )
 
-<> optional_newline > \o:n
-f:r { (({addNewLine})=>(state) => addNewLine(state, true))(env) }
+<> mandatory_space > 
 
-<> indent_start > \i:s
-f:r { (({increaseIndent})=>(state) => increaseIndent(state, true))(env) }
+    \m:s
 
-<> indent_end > \i:e
-f:r { (({decreaseIndent})=>(state) => decreaseIndent(state, true))(env) }
+    f:r { (({addSpace})=>(state) => addSpace(state, false))(env) }
+
+<> optional_space > 
+    
+    \o:s
+
+    f:r { (({addSpace})=>(state) => addSpace(state, true))(env) }
+
+<> mandatory_newline > 
+    
+    \m:n
+
+    f:r { (({addNewLine})=>(state) => addNewLine(state, false))(env) }
+
+<> optional_newline > 
+    
+    \o:n
+    
+    f:r { (({addNewLine})=>(state) => addNewLine(state, true))(env) }
+
+<> indent_start > 
+    
+    \i:s
+    
+    f:r { (({increaseIndent})=>(state) => increaseIndent(state, true))(env) }
+
+<> indent_end > 
+    
+    \i:e
+    
+    f:r { (({decreaseIndent})=>(state) => decreaseIndent(state, true))(env) }
