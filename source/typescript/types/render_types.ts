@@ -44,6 +44,8 @@ export interface RendererState<Node, TypeName extends keyof Node> {
      * True if the last character written is a space or newline character
      */
     PREVIOUS_SPACE: boolean;
+
+    FORMAT: boolean;
 }
 
 export interface renderFunction<Node, TypeName extends keyof Node> {

@@ -5,12 +5,11 @@
  */
 
 import { NodeMappings } from "../types/node_mappings.js";
-import { NodeRenderer, RendererState } from "../types/render_types";
-//import loader from "./parser.js";
-//const render_compiler = await loader;
 
+import { NodeRenderer, RendererState } from "../types/render_types";
 
 import framework from "./parser_new.js";
+
 const { parse: render_compiler } = await framework;
 
 function getSourcePosition(state: RendererState<any, any>): { line: number, column: number; } {
@@ -22,21 +21,18 @@ function addLiteral(state: RendererState<any, any>, literal_string: string) {
     return literal_string;
 }
 
-function addSpace(state, IS_OPTIONAL) {
-
-    //if (state.PREVIOUS_SPACE)
-    //    return "";
+function addSpace(state: RendererState<any, any>, IS_OPTIONAL) {
 
     state.PREVIOUS_SPACE = true;
 
-    if (IS_OPTIONAL) return " ";
+    if (IS_OPTIONAL && !state.FORMAT) return "";
 
     return " ";
 }
 
-function addNewLine(state, IS_OPTIONAL) {
+function addNewLine(state: RendererState<any, any>, IS_OPTIONAL) {
 
-    if (IS_OPTIONAL && false)
+    if (IS_OPTIONAL && !state.FORMAT)
         return "";
 
     state.PREVIOUS_SPACE = true;
@@ -44,11 +40,11 @@ function addNewLine(state, IS_OPTIONAL) {
     return "\n" + (" ").repeat(state.indent * 4);
 }
 
-function increaseIndent(state, IS_OPTIONAL) {
+function increaseIndent(state: RendererState<any, any>, IS_OPTIONAL) {
     state.indent++;
 }
 
-function decreaseIndent(state, IS_OPTIONAL) {
+function decreaseIndent(state: RendererState<any, any>, IS_OPTIONAL) {
     state.indent--;
 }
 
@@ -60,8 +56,11 @@ function emptyProp(state, prop, index) {
     if (!property) return true;
 
     if (Array.isArray(property)) {
+
         index = index ? parseInt(index) : null;
+
         if (typeof index == "number") {
+
 
             if (!property[index]) return true;
 
@@ -185,7 +184,8 @@ export function renderFunction<Node, TypeName extends keyof Node>(
 export function render<Node, TypeName extends keyof Node>(
     node: Node,
     mappings: NodeMappings<Node, TypeName>,
-    renderers: NodeRenderer<Node, TypeName>[]
+    renderers: NodeRenderer<Node, TypeName>[],
+    ENABLE_OPTIONAL_FORMATTING: boolean = false
 ) {
 
     const state: RendererState<Node, TypeName> = {
@@ -197,7 +197,8 @@ export function render<Node, TypeName extends keyof Node>(
         mappings,
         renderers,
         node,
-        custom: {}
+        custom: {},
+        FORMAT: ENABLE_OPTIONAL_FORMATTING
     };
 
     return renderFunction(state, node);

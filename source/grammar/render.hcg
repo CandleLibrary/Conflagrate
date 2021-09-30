@@ -37,7 +37,7 @@
 
     f:r { 
        (({emptyProp}, flag, rules, alt_rules, index, NOT) => 
-           (state)=> (!emptyProp(state, flag, index)) && !NOT
+           (state)=> (+(!emptyProp(state, flag, index)) ^ +NOT)
                ? rules.map(r=>r(state)).join("") 
                : alt_rules.map(r=>r(state)).join("") 
        )(env, $$3, $$6, $$7 || [], $4, !!$$2)
