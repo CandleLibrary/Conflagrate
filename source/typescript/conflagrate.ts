@@ -49,7 +49,7 @@ import {
 } from "./render/render.js";
 
 import { copy } from "./copy.js";
-
+import { TraversedNode } from './types/traversed_node.js';
 
 export {
     copy,
@@ -89,6 +89,7 @@ export {
     experimentalRender,
 
     //Types
+    TraversedNode,
     TraverseState,
     NodeMapping,
     NodeMappings
