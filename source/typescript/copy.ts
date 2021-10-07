@@ -16,6 +16,8 @@ export function copy<T>(node: T): T {
 
         clone = Object.assign({}, node);
 
+        Object.setPrototypeOf(clone, Object.getPrototypeOf(node));
+
         for (const name in clone) {
 
             let val = clone[name];
@@ -25,8 +27,9 @@ export function copy<T>(node: T): T {
                     (<Lexer><unknown>clone[name]) = val.copy();
                 else if (Array.isArray(val))
                     (<Array<T>><unknown>clone[name]) = val.map(copy);
-                else if (val !== null)
+                else if (val !== null) {
                     (<unknown>clone[name]) = copy(val);
+                }
             }
         }
     }
