@@ -3,6 +3,7 @@
  * see /source/typescript/hydrocarbon.ts for full copyright and warranty 
  * disclaimer notice.
  */
+import { Token } from "@candlelib/hydrocarbon";
 
 import { NodeMappings } from "../types/node_mappings.js";
 
@@ -96,8 +97,9 @@ function propertyToString<Node, TypeName extends keyof Node>(
     } else {
 
         if (typeof property == "object") {
-
-            if (Array.isArray(property)) {
+            if (property instanceof Token) {
+                str = property.toString();
+            } else if (Array.isArray(property)) {
 
                 if (index < 0 || index == Infinity) {
                     const delimiter_string: string = delimiter.map(d => d(state)).join("");
