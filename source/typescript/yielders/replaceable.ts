@@ -87,7 +87,6 @@ export class ReplaceableYielder<T, K extends keyof T> extends Yielder<T, K> {
                 REPLACEMENT_IS_ARRAY = Array.isArray(replacement),
                 REPLACEMENT_IS_NULL = null === replacement,
                 len = val_length_stack[sp - 1],
-                limit = len & 0xFFFF0000 >>> 16,
                 index = (len & 0xFFFF) - 1,
                 new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
                 children: T[] = (<T[]><unknown>parent[key]).slice();
@@ -101,7 +100,7 @@ export class ReplaceableYielder<T, K extends keyof T> extends Yielder<T, K> {
                 //If the parent is replaced then the stack pointer should be
                 //reset to the parent's children nodes
 
-                if (new_child_children_length < limit)
+                if (new_child_children_length != (val_length_stack[sp] >> 16))
                     val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
 
                 if (REPLACEMENT_IS_NULL) {
