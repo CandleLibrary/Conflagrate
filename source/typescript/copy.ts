@@ -1,4 +1,5 @@
 import { Lexer } from "@candlelib/wind";
+import { Token } from '@candlelib/hydrocarbon';
 /**
  * Copies compatible node tree.
  * @param node - Any node in an acyclic AST tree compatible with conflagrate
@@ -23,7 +24,9 @@ export function copy<T>(node: T): T {
             let val = clone[name];
 
             if (typeof val == "object") {
-                if (val instanceof Lexer)
+                if (val instanceof Token)
+                    (<Token><unknown>clone[name]) = val;
+                else if (val instanceof Lexer)
                     (<Lexer><unknown>clone[name]) = val.copy();
                 else if (Array.isArray(val))
                     (<Array<T>><unknown>clone[name]) = val.map(copy);
