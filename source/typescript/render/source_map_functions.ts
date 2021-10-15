@@ -29,7 +29,7 @@ export function addNewColumn(
             names.set(name, names.size);
         name_index = names.get(name);
     }
-    if (column > 0)
-        getLastLine(map).push(column, source_index, original_line, original_col - 1, name_index);
+    if (column >= 0)
+        getLastLine(map).push(column, source_index, original_line, original_col, name_index);
 }
 ;

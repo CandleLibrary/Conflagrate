@@ -11,14 +11,22 @@ import { NodeRenderer, RendererState } from "../types/render_types";
 
 import framework from "./parser_new.js";
 
+import { Logger } from "@candlelib/log"
+import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./source_map_functions.js";
+import { createSourceMap } from "../sourcemap/source_map.js";
+import { SourceMap } from "../conflagrate.js";
+
 const { parse: render_compiler } = await framework;
 
-function getSourcePosition(state: RendererState<any, any>): { line: number, column: number; } {
-    return { line: 0, column: 0 };
-};
-
 function addLiteral(state: RendererState<any, any>, literal_string: string) {
+
     state.PREVIOUS_SPACE = literal_string[literal_string.length - 1][0] == " ";
+
+    if (state.CREATE_MAP && state.token)
+        addNewColumn(state.map, state.column, 0, state.token.line, state.token.column);
+
+    state.column += literal_string.length;
+
     return literal_string;
 }
 
@@ -27,6 +35,8 @@ function addSpace(state: RendererState<any, any>, IS_OPTIONAL) {
     state.PREVIOUS_SPACE = true;
 
     if (IS_OPTIONAL && !state.FORMAT) return "";
+
+    state.column += 1;
 
     return " ";
 }
@@ -37,6 +47,13 @@ function addNewLine(state: RendererState<any, any>, IS_OPTIONAL) {
         return "";
 
     state.PREVIOUS_SPACE = true;
+
+    state.line++;
+    state.column = state.indent * 4;
+
+    if (state.CREATE_MAP) {
+        addNewLines(state.map, 1);
+    }
 
     return "\n" + (" ").repeat(state.indent * 4);
 }
@@ -83,8 +100,8 @@ function propertyToString<Node, TypeName extends keyof Node>(
 ) {
 
     const property = state.node[prop];
-
     const node = state.node;
+    const token = state.token;
 
     let str = "";
 
@@ -99,16 +116,38 @@ function propertyToString<Node, TypeName extends keyof Node>(
         if (typeof property == "object") {
             if (property instanceof Token) {
                 str = property.toString();
+
+
+                if (token && state.CREATE_MAP)
+                    addNewColumn(state.map, state.column, 0, token.line, token.column);
+
+
+                state.column += str.length;
             } else if (Array.isArray(property)) {
 
                 if (index < 0 || index == Infinity) {
-                    const delimiter_string: string = delimiter.map(d => d(state)).join("");
 
-                    const start = index < 0 ? -index : 0;
+                    const start = index < 0 ? -index : 0, end = property.length - 1;
 
-                    str = property.slice(start).map(node => (state.node = node, renderFunction(state))).join(delimiter_string);
+                    const strings = [];
+
+                    for (let i = start; i < end + 1; i++) {
+                        state.node = property[i];
+                        strings.push(renderFunction(state));
+                        if (i < end) {
+                            state.node = node;
+                            state.token = token;
+                            for (const rule of delimiter)
+                                strings.push(rule(state))
+                        }
+                    }
+
+                    str = strings.join("")
+
                 } else {
+
                     state.node = property[index];
+
                     str = renderFunction(state, property[index]);
                 }
 
@@ -117,8 +156,14 @@ function propertyToString<Node, TypeName extends keyof Node>(
             }
         } else {
             str = property.toString();
+
+            if (token && state.CREATE_MAP)
+                addNewColumn(state.map, state.column, 0, token.line, token.column);
+
+            state.column += str.length;
         }
 
+        state.token = token;
         state.node = node;
     }
 
@@ -132,7 +177,9 @@ function getRenderer<Node, TypeName extends keyof Node>(
     mappings: NodeMappings<Node, TypeName>,
     renderers: NodeRenderer<Node, TypeName>[],
 ): NodeRenderer<Node, TypeName> {
+
     const index = mappings.type_lookup(node, node[mappings.typename] + "");
+
     return renderers[index];
 }
 
@@ -158,28 +205,54 @@ export function renderFunction<Node, TypeName extends keyof Node>(
 
     state.node = node;
 
-    if (["string", "number", "boolean", "null", "undefined", "bigint"].includes(typeof node))
-        return node + "";
-    else if (!node)
+    let str = "";
+
+    let token: Token = state.token;
+
+    for (const prop in node) {
+        if (node[prop] instanceof Token) {
+            //@ts-ignore
+            token = node[prop];
+            break;
+        }
+    }
+
+    if (token)
+        state.token = token;
+
+    if (["string", "number", "boolean", "null", "undefined", "bigint"].includes(typeof node)) {
+
+        str = node.toString();
+
+    } else if (!node)
         return "";
     else {
 
-        const renderer = getRenderer(node, mappings, renderers);
+        if (node?.[mappings.typename]) {
+            const renderer = getRenderer(node, mappings, renderers);
 
-        if (!(renderer?.render)) {
-            if (node?.[mappings.typename]) {
+            if (!(renderer?.render)) {
                 return `[No template pattern defined for ${node?.[mappings.typename]}]`;
-            } else {
-                throw "WTF!?!";
-            }
-        } else {
-
-            if (FORCE_TEMPLATE) {
+            } else if (FORCE_TEMPLATE) {
                 return renderer.template_function(state, renderTemplateFunction);
             } else {
                 return renderer.render(state, renderTemplateFunction);
             }
+        } else {
+            //Default to string rendering
+            str = node.toString();
         }
+    }
+
+    if (str) {
+        const token = state.token;
+
+        if (token && state.CREATE_MAP)
+            addNewColumn(state.map, state.column, 0, token.line, token.column);
+
+        state.column += str.length;
+
+        return str;
     }
 }
 
@@ -187,8 +260,11 @@ export function render<Node, TypeName extends keyof Node>(
     node: Node,
     mappings: NodeMappings<Node, TypeName>,
     renderers: NodeRenderer<Node, TypeName>[],
-    ENABLE_OPTIONAL_FORMATTING: boolean = false
-) {
+    ENABLE_OPTIONAL_FORMATTING: boolean = false,
+    ENABLE_SOURCE_MAP_GENERATING: boolean = false
+): {
+    string: string, source_map?: SourceMap
+} {
 
     const state: RendererState<Node, TypeName> = {
         column: 0,
@@ -199,11 +275,25 @@ export function render<Node, TypeName extends keyof Node>(
         mappings,
         renderers,
         node,
+        token: null,
         custom: {},
+        CREATE_MAP: ENABLE_SOURCE_MAP_GENERATING,
         FORMAT: ENABLE_OPTIONAL_FORMATTING
     };
 
-    return renderFunction(state, node);
+    if (state.CREATE_MAP) getLastLine(state.map)
+
+    const output = renderFunction(state, node);
+
+    let source_map = null;
+
+    if (state.CREATE_MAP)
+        source_map = createSourceMap(state.map, "", "", null, null, []);
+
+    return {
+        string: output,
+        source_map,
+    };
 }
 
 const env = {
@@ -221,9 +311,20 @@ export function constructRenderers<Node, TypeName extends keyof Node>(mappings: 
 
     const renderers: NodeRenderer<Node, TypeName>[] = new Array(mappings.mappings.length);
 
-    for (const { template, type, custom_render } of mappings.mappings) {
+    for (const map of mappings.mappings) {
+
+        const { template, type, custom_render } = map;
 
         const index = mappings.type_lookup(<Node>{ [mappings.typename]: type }, type);
+
+        if (index == undefined) {
+            Logger
+                .get("conflagrate")
+                .get("renderer")
+                .get("build")
+                .activate().error(`Could not derive mapping index for ${type} on template`, map)
+            throw new Error(`Could not find renderer for ${type}`)
+        }
 
         if (!template) {
 

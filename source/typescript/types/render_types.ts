@@ -5,6 +5,7 @@
  */
 
 import { NodeMappings } from "./node_mappings.js";
+import { Token } from "@candlelib/hydrocarbon";
 export interface RendererState<Node, TypeName extends keyof Node> {
 
     /**
@@ -44,8 +45,18 @@ export interface RendererState<Node, TypeName extends keyof Node> {
      * True if the last character written is a space or newline character
      */
     PREVIOUS_SPACE: boolean;
-
+    /**
+     * Enable optional formatting rules
+     */
     FORMAT: boolean;
+    /**
+     * Enable source map generation
+     */
+    CREATE_MAP: boolean;
+    /**
+     * The Token object of the current node
+     */
+    token: Token
 }
 
 export interface renderFunction<Node, TypeName extends keyof Node> {
