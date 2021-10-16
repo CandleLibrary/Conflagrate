@@ -34,32 +34,34 @@ export class MutableYielder<T, K extends keyof T> extends ReplaceableYielder<T, 
             new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
             children: T[] = <T[]><unknown>parent[key];
 
+
+
         parent = this.replace_tree_function(parent, replacement, index, children, () => false);
 
         if (new_child_children_length != (val_length_stack[sp] >> 16))
             val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
 
-        if (replacement == null) {
+        if (REPLACEMENT_IS_NULL) {
 
             val_length_stack[sp - 1] -= (1 << 16);
 
             children.splice(index, 1);
 
             node_stack[sp] = children[index - 1];
+        } else if (REPLACEMENT_IS_ARRAY) {
+            //@ts-ignore
+            val_length_stack[sp - 1] += ((replacement.length - 1) << 16);
+            //@ts-ignore
+            children.splice(index, 1, ...replacement);
+
+            node_stack[sp] = replacement[0];
         } else {
-            if (REPLACEMENT_IS_ARRAY) {
-                //@ts-ignore
-                val_length_stack[sp - 1] += ((replacement.length - 1) << 16);
-                //@ts-ignore
-                children.splice(index, 1, ...replacement);
-                node_stack[sp] = replacement[0];
-            } else {
-                //@ts-ignore 
-                children[index] = replacement;
-                //@ts-ignore 
-                node_stack[sp] = replacement;
-            }
+            //@ts-ignore 
+            children[index] = replacement;
+            //@ts-ignore 
+            node_stack[sp] = replacement;
         }
+
 
         if (REPLACEMENT_IS_NULL || PROCESS_NEW_NODE)
             val_length_stack[sp - 1] -= 1;
