@@ -21,6 +21,7 @@
         "/LICENSE"
     ],
     "dependencies": {
+        "@candlelib/log": "*",
         "@candlelib/uri": "0.3.0",
         "@candlelib/wind": "0.5.4",
         "@candlelib/hydrocarbon": "0.14.7"
