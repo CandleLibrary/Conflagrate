@@ -11,7 +11,7 @@ import { NodeRenderer, RendererState } from "../types/render_types";
 
 import framework from "./parser_new.js";
 
-import { Logger } from "@candlelib/log"
+import { Logger } from "@candlelib/log";
 import { addNewColumn, addNewLines, incrementColumn, getLastLine } from "./source_map_functions.js";
 import { createSourceMap } from "../sourcemap/source_map.js";
 import { SourceMap } from "../conflagrate.js";
@@ -138,11 +138,11 @@ function propertyToString<Node, TypeName extends keyof Node>(
                             state.node = node;
                             state.token = token;
                             for (const rule of delimiter)
-                                strings.push(rule(state))
+                                strings.push(rule(state));
                         }
                     }
 
-                    str = strings.join("")
+                    str = strings.join("");
 
                 } else {
 
@@ -219,10 +219,9 @@ export function renderFunction<Node, TypeName extends keyof Node>(
 
     if (token)
         state.token = token;
-
     if (["string", "number", "boolean", "null", "undefined", "bigint"].includes(typeof node)) {
 
-        str = node.toString();
+        str = String(node);
 
     } else if (!node)
         return "";
@@ -263,7 +262,7 @@ export function render<Node, TypeName extends keyof Node>(
     ENABLE_OPTIONAL_FORMATTING: boolean = false,
     ENABLE_SOURCE_MAP_GENERATING: boolean = false
 ): {
-    string: string, source_map?: SourceMap
+    string: string, source_map?: SourceMap;
 } {
 
     const state: RendererState<Node, TypeName> = {
@@ -281,7 +280,7 @@ export function render<Node, TypeName extends keyof Node>(
         FORMAT: ENABLE_OPTIONAL_FORMATTING
     };
 
-    if (state.CREATE_MAP) getLastLine(state.map)
+    if (state.CREATE_MAP) getLastLine(state.map);
 
     const output = renderFunction(state, node);
 
@@ -322,8 +321,8 @@ export function constructRenderers<Node, TypeName extends keyof Node>(mappings: 
                 .get("conflagrate")
                 .get("renderer")
                 .get("build")
-                .activate().error(`Could not derive mapping index for ${type} on template`, map)
-            throw new Error(`Could not find renderer for ${type}`)
+                .activate().error(`Could not derive mapping index for ${type} on template`, map);
+            throw new Error(`Could not find renderer for ${type}`);
         }
 
         if (!template) {
