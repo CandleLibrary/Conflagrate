@@ -34,9 +34,12 @@ export class MutableYielder<T, K extends keyof T> extends ReplaceableYielder<T, 
             new_child_children_length = getChildContainerLength(REPLACEMENT_IS_ARRAY ? replacement[0] : replacement, key),
             children: T[] = <T[]><unknown>parent[key];
 
+        let new_parent = this.replace_tree_function(parent, replacement, index, children, () => false);
 
-
-        parent = this.replace_tree_function(parent, replacement, index, children, () => false);
+        if (new_parent === null) {
+            this.stack_pointer--;
+            return this.replace(null, false);
+        }
 
         if (new_child_children_length != (val_length_stack[sp] >> 16))
             val_length_stack[sp] = (new_child_children_length << 16) | (val_length_stack[sp] & 0xFFFF);
@@ -61,7 +64,6 @@ export class MutableYielder<T, K extends keyof T> extends ReplaceableYielder<T, 
             //@ts-ignore 
             node_stack[sp] = replacement;
         }
-
 
         if (REPLACEMENT_IS_NULL || PROCESS_NEW_NODE)
             val_length_stack[sp - 1] -= 1;
